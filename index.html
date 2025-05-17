@@ -672,10 +672,13 @@
 
     <script>
         // ข้อมูลการกำหนดค่า GitHub
-        const GITHUB_USERNAME = 'Anawin870'; // เปลี่ยนเป็นชื่อ GitHub ของคุณ
-        const GITHUB_REPO = 'Webmanga'; // เปลี่ยนเป็นชื่อ repository ของคุณ
-        const GITHUB_TOKEN = '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'; // สร้าง token ที่มีสิทธิ์ repo
-        const DATA_FILE = 'manga-data.json';
+        // อ่านข้อมูลผ่าน Raw URL
+async function loadData() {
+  const rawUrl = `https://raw.githubusercontent.com/Anawin870/Webmanga2/refs/heads/main/manga-data.json`;
+  const response = await fetch(rawUrl);
+  return await response.json();
+}
+
         
         // โครงสร้างข้อมูลเริ่มต้น
         const defaultData = {

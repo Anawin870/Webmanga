@@ -1,0 +1,58 @@
+{
+  "users": [
+    {
+      "username": "admin",
+      "password": "admin123",
+      "isAdmin": true
+    },
+    {
+      "username": "user1",
+      "password": "password123",
+      "isAdmin": false
+    }
+  ],
+  "manga": [
+    {
+      "id": 1,
+      "title": "One Piece",
+      "description": "เรื่องราวการผจญภัยของลูฟี่และลูกเรือโจรสลัดหมวกฟาง",
+      "cover": "https://example.com/one-piece-cover.jpg",
+      "chapters": [
+        {
+          "number": 1050,
+          "title": "การต่อสู้ครั้งสำคัญ",
+          "pages": [
+            "https://example.com/one-piece-1050-1.jpg",
+            "https://example.com/one-piece-1050-2.jpg",
+            "https://example.com/one-piece-1050-3.jpg"
+          ]
+        },
+        {
+          "number": 1049,
+          "title": "จุดเปลี่ยน",
+          "pages": [
+            "https://example.com/one-piece-1049-1.jpg",
+            "https://example.com/one-piece-1049-2.jpg"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Solo Leveling",
+      "description": "เรื่องราวของฮีโร่ที่อ่อนแอที่สุดที่กลายเป็นผู้แข็งแกร่งที่สุด",
+      "cover": "https://example.com/solo-leveling-cover.jpg",
+      "chapters": [
+        {
+          "number": 179,
+          "title": "การกลับมาของราชา",
+          "pages": [
+            "https://example.com/solo-leveling-179-1.jpg",
+            "https://example.com/solo-leveling-179-2.jpg"
+          ]
+        }
+      ]
+    }
+  ],
+  "currentUser": null
+}

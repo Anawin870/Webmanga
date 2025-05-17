@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MangaHub - อ่านมังงะและมังฮวา</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>MangaHub</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">หน้าแรก</a></li>
+                    <li><a href="manga.html">มังงะทั้งหมด</a></li>
+                    <li><a href="#" id="login-btn">เข้าสู่ระบบ</a></li>
+                    <li><a href="#" id="admin-btn" style="display:none;">แอดมิน</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <h2>อ่านมังงะและมังฮวาฟรี</h2>
+            <p>อัพเดททุกวัน ไม่มีโฆษณารบกวน</p>
+        </section>
+
+        <section class="featured-manga">
+            <h3>มังงะแนะนำ</h3>
+            <div class="manga-grid" id="featured-manga">
+                <!-- มังงะแนะนำจะถูกโหลดโดย JavaScript -->
+            </div>
+        </section>
+
+        <section class="recent-updates">
+            <h3>อัพเดทล่าสุด</h3>
+            <div class="manga-grid" id="recent-manga">
+                <!-- มังงะอัพเดทล่าสุดจะถูกโหลดโดย JavaScript -->
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 MangaHub. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Modal Login -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>เข้าสู่ระบบ</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">ชื่อผู้ใช้:</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">รหัสผ่าน:</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit">เข้าสู่ระบบ</button>
+            </form>
+            <p>ยังไม่มีบัญชี? <a href="#" id="register-link">สมัครสมาชิก</a></p>
+        </div>
+    </div>
+
+    <!-- Modal Register -->
+    <div id="register-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>สมัครสมาชิก</h2>
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="reg-username">ชื่อผู้ใช้:</label>
+                    <input type="text" id="reg-username" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-email">อีเมล:</label>
+                    <input type="email" id="reg-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-password">รหัสผ่าน:</label>
+                    <input type="password" id="reg-password" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-confirm-password">ยืนยันรหัสผ่าน:</label>
+                    <input type="password" id="reg-confirm-password" required>
+                </div>
+                <button type="submit">สมัครสมาชิก</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

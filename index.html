@@ -3,100 +3,1302 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MangaHub - อ่านมังงะและมังฮวา</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>MangaTH Pro - เว็บอ่านมังงะ (GitHub Database)</title>
+    <style>
+        /* Reset และฟอนต์พื้นฐาน */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Noto Sans Thai', sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .auth-buttons {
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .auth-btn {
+            padding: 0.3rem 0.8rem;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .auth-btn.logout {
+            background-color: #e74c3c;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-right: 1.5rem;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .search-box {
+            display: flex;
+        }
+
+        .search-box input {
+            padding: 0.5rem;
+            border: none;
+            border-radius: 4px 0 0 4px;
+        }
+
+        .search-box button {
+            padding: 0.5rem 1rem;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+        }
+
+        main {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 70vh;
+        }
+
+        h2 {
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+            border-bottom: 2px solid #e74c3c;
+            padding-bottom: 0.5rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .manga-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .manga-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .manga-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .manga-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .manga-card h3 {
+            padding: 0.5rem;
+            font-size: 1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .manga-card p {
+            padding: 0 0.5rem 0.5rem;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .manga-card .delete-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .manga-card:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .update-list {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .update-item {
+            display: flex;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .update-item img {
+            width: 80px;
+            height: 100px;
+            object-fit: cover;
+            margin-right: 1rem;
+            border-radius: 4px;
+        }
+
+        .update-info h3 {
+            margin-bottom: 0.3rem;
+        }
+
+        .update-info p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .update-item .delete-chapter-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.2rem 0.5rem;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .update-item:hover .delete-chapter-btn {
+            opacity: 1;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.8);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: black;
+        }
+
+        /* Auth Modal Styles */
+        .auth-modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.8);
+        }
+
+        .auth-form {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .auth-form h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .auth-submit-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+
+        .auth-toggle {
+            text-align: center;
+            margin-top: 1rem;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .auth-toggle:hover {
+            color: #2c3e50;
+            text-decoration: underline;
+        }
+
+        /* Admin Panel Styles */
+        .admin-panel {
+            background: #34495e;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .admin-panel h3 {
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .admin-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .admin-form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .admin-form-group label {
+            margin-bottom: 0.5rem;
+            color: white;
+            font-weight: bold;
+        }
+
+        .admin-form-group input, .admin-form-group textarea {
+            padding: 0.5rem;
+            border-radius: 4px;
+            border: none;
+        }
+
+        .admin-form-group textarea {
+            min-height: 100px;
+        }
+
+        .admin-btn {
+            padding: 0.5rem 1rem;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Chapter Viewer Styles */
+        .chapter-viewer {
+            margin-top: 2rem;
+        }
+
+        .chapter-pages {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .chapter-page {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .chapter-page img {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .chapter-page .delete-page-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .chapter-page:hover .delete-page-btn {
+            opacity: 1;
+        }
+
+        /* Admin Password Modal */
+        .admin-password-modal {
+            display: none;
+            position: fixed;
+            z-index: 101;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.8);
+        }
+
+        .admin-password-content {
+            background-color: #fefefe;
+            margin: 20% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .admin-password-content h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .auth-buttons {
+                position: static;
+                margin-top: 1rem;
+                width: 100%;
+                justify-content: flex-end;
+            }
+            
+            .search-box {
+                margin-top: 1rem;
+                width: 100%;
+            }
+            
+            .manga-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 2% auto;
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
-        <div class="container">
-            <h1>MangaHub</h1>
-            <nav>
-                <ul>
-                    <li><a href="index.html">หน้าแรก</a></li>
-                    <li><a href="manga.html">มังงะทั้งหมด</a></li>
-                    <li><a href="#" id="login-btn">เข้าสู่ระบบ</a></li>
-                    <li><a href="#" id="admin-btn" style="display:none;">แอดมิน</a></li>
-                </ul>
-            </nav>
+        <div class="auth-buttons" id="authButtons">
+            <button class="auth-btn" id="loginBtn">เข้าสู่ระบบ</button>
+            <button class="auth-btn" id="registerBtn">สมัครสมาชิก</button>
         </div>
+        <h1>MangaTH Pro (GitHub DB)</h1>
+        <nav>
+            <ul>
+                <li><a href="#" id="homeLink">หน้าแรก</a></li>
+                <li><a href="#" id="mangaListLink">มังงะทั้งหมด</a></li>
+                <li><a href="#" id="adminLink" style="display: none;">ผู้ดูแล</a></li>
+            </ul>
+            <div class="search-box">
+                <input type="text" placeholder="ค้นหามังงะ..." id="searchInput">
+                <button id="searchButton">ค้นหา</button>
+            </div>
+        </nav>
     </header>
 
-    <main class="container">
-        <section class="hero">
-            <h2>อ่านมังงะและมังฮวาฟรี</h2>
-            <p>อัพเดททุกวัน ไม่มีโฆษณารบกวน</p>
-        </section>
+    <main id="mainContent">
+        <!-- หน้าแรก -->
+        <section id="homeSection" class="featured">
+            <h2>เรื่องแนะนำ</h2>
+            <div class="manga-grid" id="featuredManga">
+                <div class="loading">กำลังโหลดข้อมูล...</div>
+            </div>
 
-        <section class="featured-manga">
-            <h3>มังงะแนะนำ</h3>
-            <div class="manga-grid" id="featured-manga">
-                <!-- มังงะแนะนำจะถูกโหลดโดย JavaScript -->
+            <h2>อัปเดตล่าสุด</h2>
+            <div class="update-list" id="recentUpdates">
+                <div class="loading">กำลังโหลดข้อมูล...</div>
             </div>
         </section>
 
-        <section class="recent-updates">
-            <h3>อัพเดทล่าสุด</h3>
-            <div class="manga-grid" id="recent-manga">
-                <!-- มังงะอัพเดทล่าสุดจะถูกโหลดโดย JavaScript -->
+        <!-- รายการมังงะทั้งหมด -->
+        <section id="mangaListSection" class="featured" style="display: none;">
+            <h2>มังงะทั้งหมด</h2>
+            <div class="manga-grid" id="allMangaList">
+                <div class="loading">กำลังโหลดข้อมูล...</div>
+            </div>
+        </section>
+
+        <!-- ผู้ดูแลระบบ -->
+        <section id="adminSection" style="display: none;">
+            <div class="admin-panel" id="addMangaPanel">
+                <h3>เพิ่มมังงะใหม่</h3>
+                <form id="addMangaForm" class="admin-form">
+                    <div class="admin-form-group">
+                        <label for="mangaTitle">ชื่อเรื่อง</label>
+                        <input type="text" id="mangaTitle" required>
+                    </div>
+                    <div class="admin-form-group">
+                        <label for="mangaDescription">คำอธิบาย</label>
+                        <textarea id="mangaDescription" required></textarea>
+                    </div>
+                    <div class="admin-form-group">
+                        <label for="mangaCoverUrl">URL รูปภาพหน้าปก</label>
+                        <input type="text" id="mangaCoverUrl" placeholder="https://example.com/image.jpg" required>
+                    </div>
+                    <button type="submit" class="admin-btn">เพิ่มมังงะ</button>
+                </form>
+            </div>
+
+            <div class="admin-panel" id="addChapterPanel">
+                <h3>เพิ่มตอนใหม่</h3>
+                <form id="addChapterForm" class="admin-form">
+                    <div class="admin-form-group">
+                        <label for="chapterManga">เลือกมังงะ</label>
+                        <select id="chapterManga" required>
+                            <option value="">-- เลือกมังงะ --</option>
+                        </select>
+                    </div>
+                    <div class="admin-form-group">
+                        <label for="chapterNumber">เลขตอน</label>
+                        <input type="number" id="chapterNumber" required>
+                    </div>
+                    <div class="admin-form-group">
+                        <label for="chapterTitle">ชื่อตอน (ไม่จำเป็น)</label>
+                        <input type="text" id="chapterTitle">
+                    </div>
+                    <div class="admin-form-group">
+                        <label for="chapterPages">URL รูปภาพในตอน (คั่นด้วยลูกน้ำ)</label>
+                        <textarea id="chapterPages" placeholder="https://example.com/page1.jpg, https://example.com/page2.jpg" required></textarea>
+                    </div>
+                    <button type="submit" class="admin-btn">เพิ่มตอน</button>
+                </form>
             </div>
         </section>
     </main>
 
-    <footer>
-        <div class="container">
-            <p>&copy; 2023 MangaHub. All rights reserved.</p>
+    <!-- Modal สำหรับดูมังงะ -->
+    <div id="mangaModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeMangaModal">&times;</span>
+            <div id="mangaModalContent">
+                <div class="loading">กำลังโหลดข้อมูล...</div>
+            </div>
         </div>
+    </div>
+
+    <!-- Modal สำหรับดูตอน -->
+    <div id="chapterModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeChapterModal">&times;</span>
+            <div id="chapterModalContent">
+                <div class="loading">กำลังโหลดข้อมูล...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal สำหรับเข้าสู่ระบบ -->
+    <div id="loginModal" class="auth-modal">
+        <div class="auth-form">
+            <span class="close" id="closeLoginModal">&times;</span>
+            <h2>เข้าสู่ระบบ</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginUsername">ชื่อผู้ใช้</label>
+                    <input type="text" id="loginUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">รหัสผ่าน</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="auth-submit-btn">เข้าสู่ระบบ</button>
+            </form>
+            <div class="auth-toggle" id="showRegisterForm">ยังไม่มีบัญชี? สมัครสมาชิก</div>
+        </div>
+    </div>
+
+    <!-- Modal สำหรับสมัครสมาชิก -->
+    <div id="registerModal" class="auth-modal">
+        <div class="auth-form">
+            <span class="close" id="closeRegisterModal">&times;</span>
+            <h2>สมัครสมาชิก</h2>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="registerUsername">ชื่อผู้ใช้</label>
+                    <input type="text" id="registerUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">รหัสผ่าน</label>
+                    <input type="password" id="registerPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerConfirmPassword">ยืนยันรหัสผ่าน</label>
+                    <input type="password" id="registerConfirmPassword" required>
+                </div>
+                <button type="submit" class="auth-submit-btn">สมัครสมาชิก</button>
+            </form>
+            <div class="auth-toggle" id="showLoginForm">มีบัญชีอยู่แล้ว? เข้าสู่ระบบ</div>
+        </div>
+    </div>
+
+    <!-- Modal สำหรับรหัสผ่านผู้ดูแล -->
+    <div id="adminPasswordModal" class="admin-password-modal">
+        <div class="admin-password-content">
+            <span class="close" id="closeAdminPasswordModal">&times;</span>
+            <h2>ยืนยันตัวตนผู้ดูแล</h2>
+            <form id="adminPasswordForm">
+                <div class="form-group">
+                    <label for="adminPassword">รหัสผ่านผู้ดูแล</label>
+                    <input type="password" id="adminPassword" required>
+                </div>
+                <button type="submit" class="auth-submit-btn">ยืนยัน</button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2023 MangaTH Pro - เว็บอ่านมังงะและมังฮวาแบบครบวงจร (ใช้ GitHub เป็นฐานข้อมูล)</p>
     </footer>
 
-    <!-- Modal Login -->
-    <div id="login-modal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>เข้าสู่ระบบ</h2>
-            <form id="login-form">
-                <div class="form-group">
-                    <label for="username">ชื่อผู้ใช้:</label>
-                    <input type="text" id="username" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">รหัสผ่าน:</label>
-                    <input type="password" id="password" required>
-                </div>
-                <button type="submit">เข้าสู่ระบบ</button>
-            </form>
-            <p>ยังไม่มีบัญชี? <a href="#" id="register-link">สมัครสมาชิก</a></p>
-        </div>
-    </div>
+    <script>
+        // ข้อมูลการกำหนดค่า GitHub
+        const GITHUB_USERNAME = 'Anawin870'; // เปลี่ยนเป็นชื่อ GitHub ของคุณ
+        const GITHUB_REPO = 'Webmanga2'; // เปลี่ยนเป็นชื่อ repository ของคุณ
+        const GITHUB_TOKEN = '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'; // สร้าง token ที่มีสิทธิ์ repo
+        const DATA_FILE = 'manga-data.json';
+        
+        // โครงสร้างข้อมูลเริ่มต้น
+        const defaultData = {
+            users: [
+                { username: 'admin', password: 'admin123', isAdmin: true }
+            ],
+            manga: [],
+            currentUser: null
+        };
 
-    <!-- Modal Register -->
-    <div id="register-modal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>สมัครสมาชิก</h2>
-            <form id="register-form">
-                <div class="form-group">
-                    <label for="reg-username">ชื่อผู้ใช้:</label>
-                    <input type="text" id="reg-username" required>
-                </div>
-                <div class="form-group">
-                    <label for="reg-email">อีเมล:</label>
-                    <input type="email" id="reg-email" required>
-                </div>
-                <div class="form-group">
-                    <label for="reg-password">รหัสผ่าน:</label>
-                    <input type="password" id="reg-password" required>
-                </div>
-                <div class="form-group">
-                    <label for="reg-confirm-password">ยืนยันรหัสผ่าน:</label>
-                    <input type="password" id="reg-confirm-password" required>
-                </div>
-                <button type="submit">สมัครสมาชิก</button>
-            </form>
-        </div>
-    </div>
+        // ตัวแปรเก็บข้อมูล
+        let appData = { ...defaultData };
 
-    <script src="js/auth.js"></script>
-    <script src="js/main.js"></script>
+        // DOM Elements
+        const homeLink = document.getElementById('homeLink');
+        const mangaListLink = document.getElementById('mangaListLink');
+        const adminLink = document.getElementById('adminLink');
+        const searchButton = document.getElementById('searchButton');
+        const closeMangaModal = document.getElementById('closeMangaModal');
+        const closeChapterModal = document.getElementById('closeChapterModal');
+        const authButtons = document.getElementById('authButtons');
+        const loginBtn = document.getElementById('loginBtn');
+        const registerBtn = document.getElementById('registerBtn');
+        const loginModal = document.getElementById('loginModal');
+        const registerModal = document.getElementById('registerModal');
+        const closeLoginModal = document.getElementById('closeLoginModal');
+        const closeRegisterModal = document.getElementById('closeRegisterModal');
+        const showRegisterForm = document.getElementById('showRegisterForm');
+        const showLoginForm = document.getElementById('showLoginForm');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const adminPasswordModal = document.getElementById('adminPasswordModal');
+        const closeAdminPasswordModal = document.getElementById('closeAdminPasswordModal');
+        const adminPasswordForm = document.getElementById('adminPasswordForm');
+        const addMangaPanel = document.getElementById('addMangaPanel');
+        const addChapterPanel = document.getElementById('addChapterPanel');
+
+        // Event Listeners
+        homeLink.addEventListener('click', showHome);
+        mangaListLink.addEventListener('click', showMangaList);
+        adminLink.addEventListener('click', showAdminPanel);
+        searchButton.addEventListener('click', searchManga);
+        closeMangaModal.addEventListener('click', closeModal);
+        closeChapterModal.addEventListener('click', closeModal);
+        loginBtn.addEventListener('click', () => loginModal.style.display = 'block');
+        registerBtn.addEventListener('click', () => registerModal.style.display = 'block');
+        closeLoginModal.addEventListener('click', () => loginModal.style.display = 'none');
+        closeRegisterModal.addEventListener('click', () => registerModal.style.display = 'none');
+        showRegisterForm.addEventListener('click', () => {
+            loginModal.style.display = 'none';
+            registerModal.style.display = 'block';
+        });
+        showLoginForm.addEventListener('click', () => {
+            registerModal.style.display = 'none';
+            loginModal.style.display = 'block';
+        });
+        closeAdminPasswordModal.addEventListener('click', () => adminPasswordModal.style.display = 'none');
+        
+        loginForm.addEventListener('submit', handleLogin);
+        registerForm.addEventListener('submit', handleRegister);
+        adminPasswordForm.addEventListener('submit', handleAdminPassword);
+        document.getElementById('addMangaForm').addEventListener('submit', addManga);
+        document.getElementById('addChapterForm').addEventListener('submit', addChapter);
+
+        // ฟังก์ชันโหลดข้อมูลจาก GitHub
+        async function loadData() {
+            try {
+                const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${DATA_FILE}`, {
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const content = atob(data.content);
+                    appData = JSON.parse(content);
+                } else {
+                    // ถ้าไม่มีไฟล์ ให้ใช้ข้อมูลเริ่มต้น
+                    appData = { ...defaultData };
+                    await saveDataToGitHub();
+                }
+                
+                updateUI();
+                renderHomePage();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                alert('เกิดข้อผิดพลาดในการโหลดข้อมูล');
+            }
+        }
+
+        // ฟังก์ชันบันทึกข้อมูลไปยัง GitHub
+        async function saveDataToGitHub() {
+            try {
+                // ดึงข้อมูลไฟล์ปัจจุบันเพื่อรับ SHA (จำเป็นสำหรับการอัปเดต)
+                let sha = null;
+                const getResponse = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${DATA_FILE}`, {
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (getResponse.ok) {
+                    const data = await getResponse.json();
+                    sha = data.sha;
+                }
+                
+                // สร้างเนื้อหาใหม่
+                const content = JSON.stringify(appData, null, 2);
+                const contentBase64 = btoa(unescape(encodeURIComponent(content)));
+                
+                const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${DATA_FILE}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: 'Update manga data',
+                        content: contentBase64,
+                        sha: sha
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to save data');
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('Error saving data:', error);
+                alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+                return false;
+            }
+        }
+
+        // ฟังก์ชันจัดการการเข้าสู่ระบบ
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            const user = appData.users.find(u => u.username === username && u.password === password);
+            
+            if (user) {
+                appData.currentUser = {
+                    username: user.username,
+                    isAdmin: user.isAdmin || false
+                };
+                await saveDataToGitHub();
+                loginModal.style.display = 'none';
+                alert('เข้าสู่ระบบสำเร็จ');
+            } else {
+                alert('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+            }
+        }
+
+        // ฟังก์ชันจัดการการสมัครสมาชิก
+        async function handleRegister(e) {
+            e.preventDefault();
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                alert('รหัสผ่านไม่ตรงกัน');
+                return;
+            }
+            
+            if (appData.users.some(u => u.username === username)) {
+                alert('ชื่อผู้ใช้นี้มีอยู่แล้ว');
+                return;
+            }
+            
+            appData.users.push({
+                username,
+                password,
+                isAdmin: false
+            });
+            
+            await saveDataToGitHub();
+            registerModal.style.display = 'none';
+            alert('สมัครสมาชิกสำเร็จ');
+        }
+
+        // ฟังก์ชันจัดการรหัสผ่านผู้ดูแล
+        function handleAdminPassword(e) {
+            e.preventDefault();
+            const password = document.getElementById('adminPassword').value;
+            
+            if (password === 'admin123') { // รหัสผ่านผู้ดูแล
+                adminPasswordModal.style.display = 'none';
+                addMangaPanel.style.display = 'block';
+                addChapterPanel.style.display = 'block';
+            } else {
+                alert('รหัสผ่านไม่ถูกต้อง');
+            }
+        }
+
+        // ฟังก์ชันแสดงแผงผู้ดูแล
+        function showAdminPanel() {
+            if (!appData.currentUser) {
+                alert('กรุณาเข้าสู่ระบบก่อน');
+                return;
+            }
+            
+            document.getElementById('homeSection').style.display = 'none';
+            document.getElementById('mangaListSection').style.display = 'none';
+            document.getElementById('adminSection').style.display = 'block';
+            
+            // ถ้าเป็นผู้ดูแล ให้แสดงแผงควบคุม
+            if (appData.currentUser.isAdmin) {
+                addMangaPanel.style.display = 'block';
+                addChapterPanel.style.display = 'block';
+                renderAdminPanel();
+            } else {
+                // ถ้าไม่ใช่ผู้ดูแล ให้ตรวจสอบรหัสผ่าน
+                adminPasswordModal.style.display = 'block';
+                addMangaPanel.style.display = 'none';
+                addChapterPanel.style.display = 'none';
+            }
+        }
+
+        // ฟังก์ชันเพิ่มมังงะใหม่
+        async function addManga(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('mangaTitle').value;
+            const description = document.getElementById('mangaDescription').value;
+            const coverUrl = document.getElementById('mangaCoverUrl').value;
+            
+            if (!title || !description || !coverUrl) {
+                alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+                return;
+            }
+            
+            // สร้างมังงะใหม่
+            const newManga = {
+                id: appData.manga.length > 0 ? Math.max(...appData.manga.map(m => m.id)) + 1 : 1,
+                title: title,
+                description: description,
+                cover: coverUrl,
+                chapters: []
+            };
+            
+            appData.manga.push(newManga);
+            const success = await saveDataToGitHub();
+            
+            if (success) {
+                alert(`เพิ่มมังงะ "${title}" เรียบร้อยแล้ว`);
+                e.target.reset();
+                renderAdminPanel();
+            }
+        }
+
+        // ฟังก์ชันเพิ่มตอนใหม่
+        async function addChapter(e) {
+            e.preventDefault();
+            
+            const mangaId = parseInt(document.getElementById('chapterManga').value);
+            const chapterNumber = parseInt(document.getElementById('chapterNumber').value);
+            const chapterTitle = document.getElementById('chapterTitle').value;
+            const pagesInput = document.getElementById('chapterPages').value;
+            
+            if (!mangaId || isNaN(chapterNumber) || !pagesInput) {
+                alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+                return;
+            }
+            
+            const manga = appData.manga.find(m => m.id === mangaId);
+            if (!manga) return;
+            
+            // ตรวจสอบว่ามีตอนนี้แล้วหรือไม่
+            if (manga.chapters.some(c => c.number === chapterNumber)) {
+                alert(`มังงะนี้มีตอนที่ ${chapterNumber} แล้ว`);
+                return;
+            }
+            
+            // แยก URL รูปภาพ
+            const pages = pagesInput.split(',').map(url => url.trim()).filter(url => url);
+            
+            // สร้างตอนใหม่
+            const newChapter = {
+                number: chapterNumber,
+                title: chapterTitle,
+                pages: pages
+            };
+            
+            manga.chapters.push(newChapter);
+            // เรียงตอนตามเลขตอน (จากมากไปน้อย)
+            manga.chapters.sort((a, b) => b.number - a.number);
+            
+            const success = await saveDataToGitHub();
+            
+            if (success) {
+                alert(`เพิ่มตอนที่ ${chapterNumber} เรียบร้อยแล้ว`);
+                e.target.reset();
+            }
+        }
+
+        // ฟังก์ชันลบมังงะ
+        async function deleteManga(mangaId, e) {
+            if (e) e.stopPropagation();
+            if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบมังงะนี้?')) return;
+            
+            appData.manga = appData.manga.filter(m => m.id !== mangaId);
+            const success = await saveDataToGitHub();
+            
+            if (success) {
+                alert('ลบมังงะเรียบร้อยแล้ว');
+                if (document.getElementById('homeSection').style.display !== 'none') {
+                    renderHomePage();
+                }
+                if (document.getElementById('mangaListSection').style.display !== 'none') {
+                    renderAllMangaList();
+                }
+            }
+        }
+
+        // ฟังก์ชันลบตอน
+        async function deleteChapter(mangaId, chapterNumber, e) {
+            if (e) e.stopPropagation();
+            if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบตอนนี้?')) return;
+            
+            const manga = appData.manga.find(m => m.id === mangaId);
+            if (!manga) return;
+            
+            manga.chapters = manga.chapters.filter(c => c.number !== chapterNumber);
+            const success = await saveDataToGitHub();
+            
+            if (success) {
+                alert('ลบตอนเรียบร้อยแล้ว');
+                renderHomePage();
+            }
+        }
+
+        // ฟังก์ชันลบรูปภาพในตอน
+        async function deletePage(mangaId, chapterNumber, pageIndex, e) {
+            if (e) e.stopPropagation();
+            if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบรูปภาพนี้?')) return;
+            
+            const manga = appData.manga.find(m => m.id === mangaId);
+            if (!manga) return;
+            
+            const chapter = manga.chapters.find(c => c.number === chapterNumber);
+            if (!chapter) return;
+            
+            chapter.pages.splice(pageIndex, 1);
+            const success = await saveDataToGitHub();
+            
+            if (success) {
+                alert('ลบรูปภาพเรียบร้อยแล้ว');
+                showChapter(mangaId, chapterNumber);
+            }
+        }
+
+        // ฟังก์ชันแสดงหน้าแรก
+        function showHome() {
+            document.getElementById('homeSection').style.display = 'block';
+            document.getElementById('mangaListSection').style.display = 'none';
+            document.getElementById('adminSection').style.display = 'none';
+            renderHomePage();
+        }
+
+        // ฟังก์ชันแสดงรายการมังงะทั้งหมด
+        function showMangaList() {
+            document.getElementById('homeSection').style.display = 'none';
+            document.getElementById('mangaListSection').style.display = 'block';
+            document.getElementById('adminSection').style.display = 'none';
+            renderAllMangaList();
+        }
+
+        // ฟังก์ชันเตรียมแผงผู้ดูแล
+        function renderAdminPanel() {
+            // เตรียมตัวเลือกมังงะสำหรับเพิ่มตอน
+            const mangaSelect = document.getElementById('chapterManga');
+            mangaSelect.innerHTML = '<option value="">-- เลือกมังงะ --</option>';
+            
+            appData.manga.forEach(manga => {
+                const option = document.createElement('option');
+                option.value = manga.id;
+                option.textContent = manga.title;
+                mangaSelect.appendChild(option);
+            });
+        }
+
+        // ฟังก์ชันแสดงหน้าแรก
+        function renderHomePage() {
+            // แสดงเรื่องแนะนำ
+            const featuredGrid = document.getElementById('featuredManga');
+            featuredGrid.innerHTML = '';
+            
+            if (appData.manga.length === 0) {
+                featuredGrid.innerHTML = '<div class="loading">ยังไม่มีมังงะ</div>';
+                return;
+            }
+            
+            appData.manga.forEach(manga => {
+                const mangaCard = document.createElement('div');
+                mangaCard.className = 'manga-card';
+                mangaCard.onclick = () => showMangaDetails(manga.id);
+                
+                mangaCard.innerHTML = `
+                    <img src="${manga.cover}" alt="${manga.title}" onerror="this.src='https://via.placeholder.com/300x400?text=No+Image'">
+                    <h3>${manga.title}</h3>
+                    <p>ตอนล่าสุด: ${manga.chapters.length > 0 ? manga.chapters[0].number : 'ยังไม่มีตอน'}</p>
+                    ${appData.currentUser?.isAdmin ? 
+                        `<button class="delete-btn" onclick="deleteManga(${manga.id}, event)">×</button>` : ''}
+                `;
+                
+                featuredGrid.appendChild(mangaCard);
+            });
+
+            // แสดงอัปเดตล่าสุด
+            const updateList = document.getElementById('recentUpdates');
+            updateList.innerHTML = '';
+            
+            // รวบรวมทุกตอนจากทุกมังงะ
+            let allChapters = [];
+            appData.manga.forEach(manga => {
+                manga.chapters.forEach(chapter => {
+                    allChapters.push({
+                        mangaId: manga.id,
+                        mangaTitle: manga.title,
+                        mangaCover: manga.cover,
+                        chapter: chapter
+                    });
+                });
+            });
+            
+            // เรียงตามเลขตอน (จากมากไปน้อย)
+            allChapters.sort((a, b) => b.chapter.number - a.chapter.number);
+            
+            if (allChapters.length === 0) {
+                updateList.innerHTML = '<div class="loading">ยังไม่มีตอน</div>';
+                return;
+            }
+            
+            // แสดง 5 ตอนล่าสุด
+            allChapters.slice(0, 5).forEach(item => {
+                const updateItem = document.createElement('div');
+                updateItem.className = 'update-item';
+                updateItem.onclick = () => showChapter(item.mangaId, item.chapter.number);
+                
+                updateItem.innerHTML = `
+                    <img src="${item.mangaCover}" alt="${item.mangaTitle}" onerror="this.src='https://via.placeholder.com/300x400?text=No+Image'">
+                    <div class="update-info">
+                        <h3>${item.mangaTitle} - ตอนที่ ${item.chapter.number}</h3>
+                        <p>${item.chapter.title || ''}</p>
+                    </div>
+                    ${appData.currentUser?.isAdmin ? 
+                        `<button class="delete-chapter-btn" onclick="deleteChapter(${item.mangaId}, ${item.chapter.number}, event)">ลบตอน</button>` : ''}
+                `;
+                
+                updateList.appendChild(updateItem);
+            });
+        }
+
+        // ฟังก์ชันแสดงรายการมังงะทั้งหมด
+        function renderAllMangaList() {
+            const mangaList = document.getElementById('allMangaList');
+            mangaList.innerHTML = '';
+            
+            if (appData.manga.length === 0) {
+                mangaList.innerHTML = '<div class="loading">ยังไม่มีมังงะ</div>';
+                return;
+            }
+            
+            appData.manga.forEach(manga => {
+                const mangaCard = document.createElement('div');
+                mangaCard.className = 'manga-card';
+                mangaCard.onclick = () => showMangaDetails(manga.id);
+                
+                mangaCard.innerHTML = `
+                    <img src="${manga.cover}" alt="${manga.title}" onerror="this.src='https://via.placeholder.com/300x400?text=No+Image'">
+                    <h3>${manga.title}</h3>
+                    <p>จำนวนตอน: ${manga.chapters.length}</p>
+                    ${appData.currentUser?.isAdmin ? 
+                        `<button class="delete-btn" onclick="deleteManga(${manga.id}, event)">×</button>` : ''}
+                `;
+                
+                mangaList.appendChild(mangaCard);
+            });
+        }
+
+        // ฟังก์ชันแสดงรายละเอียดมังงะ
+        function showMangaDetails(mangaId) {
+            const manga = appData.manga.find(m => m.id === mangaId);
+            if (!manga) return;
+            
+            const modalContent = document.getElementById('mangaModalContent');
+            modalContent.innerHTML = `
+                <h2>${manga.title}</h2>
+                <div style="display: flex; gap: 2rem; margin: 1rem 0;">
+                    <img src="${manga.cover}" alt="${manga.title}" style="width: 200px; height: 300px; object-fit: cover; border-radius: 4px;" onerror="this.src='https://via.placeholder.com/300x400?text=No+Image'">
+                    <div>
+                        <p>${manga.description}</p>
+                        <h3 style="margin-top: 1rem;">ตอนทั้งหมด</h3>
+                        <ul style="list-style-type: none; padding: 0;">
+                            ${manga.chapters.map(chapter => `
+                                <li style="padding: 0.5rem 0; border-bottom: 1px solid #eee; cursor: pointer;" 
+                                    onclick="showChapter(${manga.id}, ${chapter.number})">
+                                    ตอนที่ ${chapter.number} - ${chapter.title || ''}
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('mangaModal').style.display = 'block';
+        }
+
+        // ฟังก์ชันแสดงตอน
+        function showChapter(mangaId, chapterNumber) {
+            const manga = appData.manga.find(m => m.id === mangaId);
+            if (!manga) return;
+            
+            const chapter = manga.chapters.find(c => c.number === chapterNumber);
+            if (!chapter) return;
+            
+            const modalContent = document.getElementById('chapterModalContent');
+            modalContent.innerHTML = `
+                <h2>${manga.title} - ตอนที่ ${chapter.number}</h2>
+                ${chapter.title ? `<h3>${chapter.title}</h3>` : ''}
+                <div class="chapter-viewer">
+                    <div class="chapter-pages">
+                        ${chapter.pages.map((page, index) => `
+                            <div class="chapter-page">
+                                <img src="${page}" alt="หน้า ${index + 1}" onerror="this.src='https://via.placeholder.com/800x1200?text=Image+Not+Found'">
+                                ${appData.currentUser?.isAdmin ? 
+                                    `<button class="delete-page-btn" onclick="deletePage(${manga.id}, ${chapter.number}, ${index}, event)">×</button>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('chapterModal').style.display = 'block';
+        }
+
+        // ฟังก์ชันปิด Modal
+        function closeModal() {
+            document.getElementById('mangaModal').style.display = 'none';
+            document.getElementById('chapterModal').style.display = 'none';
+        }
+
+        // ฟังก์ชันค้นหามังงะ
+        function searchManga() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            if (!searchTerm) return;
+            
+            const results = appData.manga.filter(manga => 
+                manga.title.toLowerCase().includes(searchTerm) || 
+                manga.description.toLowerCase().includes(searchTerm))
+                .map(manga => manga.id);
+            
+            if (results.length === 0) {
+                alert('ไม่พบมังงะที่คุณค้นหา');
+                return;
+            }
+            
+            // แสดงรายการมังงะที่ค้นพบ
+            showMangaList();
+            const mangaList = document.getElementById('allMangaList');
+            
+            // ซ่อนมังงะที่ไม่ตรงกับการค้นหา
+            Array.from(mangaList.children).forEach(card => {
+                const mangaId = parseInt(card.getAttribute('data-id'));
+                if (!results.includes(mangaId)) {
+                    card.style.display = 'none';
+                } else {
+                    card.style.display = 'block';
+                }
+            });
+        }
+
+        // ฟังก์ชันอัปเดต UI ตามสถานะปัจจุบัน
+        function updateUI() {
+            if (appData.currentUser) {
+                authButtons.innerHTML = `
+                    <span style="color: white; margin-right: 1rem;">สวัสดี, ${appData.currentUser.username}</span>
+                    <button class="auth-btn logout" id="logoutBtn">ออกจากระบบ</button>
+                `;
+                document.getElementById('logoutBtn').addEventListener('click', logout);
+                
+                // แสดงเมนูผู้ดูแลถ้าเป็น admin
+                if (appData.currentUser.isAdmin) {
+                    adminLink.style.display = 'block';
+                } else {
+                    adminLink.style.display = 'none';
+                }
+            } else {
+                authButtons.innerHTML = `
+                    <button class="auth-btn" id="loginBtn">เข้าสู่ระบบ</button>
+                    <button class="auth-btn" id="registerBtn">สมัครสมาชิก</button>
+                `;
+                document.getElementById('loginBtn').addEventListener('click', () => loginModal.style.display = 'block');
+                document.getElementById('registerBtn').addEventListener('click', () => registerModal.style.display = 'block');
+                adminLink.style.display = 'none';
+            }
+        }
+
+        // ฟังก์ชันออกจากระบบ
+        function logout() {
+            appData.currentUser = null;
+            updateUI();
+            alert('ออกจากระบบเรียบร้อยแล้ว');
+        }
+
+        // เริ่มต้นด้วยการโหลดข้อมูลและแสดงหน้าแรก
+        document.addEventListener('DOMContentLoaded', () => {
+            // เปิดใช้งานฟังก์ชัน global สำหรับการลบ
+            window.deleteManga = deleteManga;
+            window.deleteChapter = deleteChapter;
+            window.deletePage = deletePage;
+            window.showChapter = showChapter;
+            
+            loadData();
+        });
+    </script>
 </body>
 </html>

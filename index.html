@@ -202,6 +202,7 @@
             max-width: 900px;
             margin: 0 auto;
             text-align: center;
+            position: relative;
         }
 
         .manga-page {
@@ -210,6 +211,7 @@
             margin-bottom: 1rem;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             border-radius: 4px;
+            display: none;
         }
 
         .page-controls {
@@ -231,6 +233,21 @@
             padding: 2rem;
             font-size: 1.2rem;
             color: #666;
+        }
+
+        .reader-loading {
+            text-align: center;
+            padding: 2rem;
+            font-size: 1.2rem;
+            color: #666;
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            width: 200px;
         }
 
         /* Search Results */
@@ -345,6 +362,7 @@
                 <div class="page-info" id="pageInfo">หน้า 1/10</div>
                 
                 <div class="page-container">
+                    <div class="reader-loading" id="readerLoading">กำลังดาวน์โหลด...</div>
                     <img id="mangaPage" class="manga-page" src="" alt="หน้ามังงะ" onerror="this.src='https://via.placeholder.com/800x1200?text=ไม่พบภาพ'">
                 </div>
 
@@ -397,6 +415,7 @@
         const chapterSelect = document.getElementById('chapterSelect');
         const prevPageBtn = document.getElementById('prevPageBtn');
         const nextPageBtn = document.getElementById('nextPageBtn');
+        const readerLoading = document.getElementById('readerLoading');
 
         // Event Listeners
         homeLink.addEventListener('click', showHome);
@@ -595,6 +614,23 @@
         function updatePage() {
             const chapter = currentManga.chapters[currentChapterIndex];
             if (chapter.pages && chapter.pages.length > 0) {
+                // แสดงข้อความกำลังโหลด
+                readerLoading.style.display = 'block';
+                mangaPage.style.display = 'none';
+                
+                // เมื่อรูปภาพโหลดเสร็จ
+                mangaPage.onload = function() {
+                    readerLoading.style.display = 'none';
+                    mangaPage.style.display = 'block';
+                };
+                
+                // เมื่อรูปภาพโหลดไม่สำเร็จ
+                mangaPage.onerror = function() {
+                    readerLoading.style.display = 'none';
+                    mangaPage.style.display = 'block';
+                };
+                
+                // ตั้งค่า src เพื่อเริ่มโหลดรูปภาพ
                 mangaPage.src = chapter.pages[currentPageIndex];
                 pageInfo.textContent = `หน้า ${currentPageIndex + 1}/${chapter.pages.length}`;
             }

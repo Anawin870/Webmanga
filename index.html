@@ -259,6 +259,104 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
+        /* หน้ารายละเอียดมังงะ */
+        .manga-details-section {
+            display: none;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+        }
+
+        .manga-details-header {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .manga-details-header {
+                flex-direction: row;
+            }
+        }
+
+        .manga-cover {
+            flex: 0 0 250px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        .manga-cover img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .manga-info {
+            flex: 1;
+        }
+
+        .manga-title {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            font-size: 1.8rem;
+        }
+
+        .manga-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            color: #7f8c8d;
+        }
+
+        .manga-description {
+            margin-bottom: 1.5rem;
+            line-height: 1.7;
+        }
+
+        .chapter-list {
+            margin-top: 2rem;
+        }
+
+        .chapter-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s;
+        }
+
+        .chapter-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .chapter-item-title {
+            font-weight: bold;
+        }
+
+        .chapter-item-date {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .read-button {
+            padding: 0.5rem 1rem;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .read-button:hover {
+            background-color: #c0392b;
+        }
+
         /* Footer */
         footer {
             background-color: #2c3e50;
@@ -298,6 +396,15 @@
             .chapter-title {
                 font-size: 1rem;
                 order: -1;
+            }
+
+            .manga-details-header {
+                flex-direction: column;
+            }
+
+            .manga-cover {
+                flex: 0 0 auto;
+                max-width: 100%;
             }
         }
     </style>
@@ -343,6 +450,33 @@
         <section id="searchResultsSection" style="display: none;">
             <h2 class="section-title">ผลการค้นหา</h2>
             <div id="searchResultsContainer"></div>
+        </section>
+
+        <!-- หน้ารายละเอียดมังงะ -->
+        <section id="mangaDetailsSection" class="manga-details-section">
+            <div class="manga-details-header">
+                <div class="manga-cover">
+                    <img id="mangaDetailCover" src="" alt="ภาพปกมังงะ" onerror="this.src='https://via.placeholder.com/250x350?text=No+Cover'">
+                </div>
+                <div class="manga-info">
+                    <h1 class="manga-title" id="mangaDetailTitle">ชื่อมังงะ</h1>
+                    <div class="manga-meta">
+                        <span id="mangaDetailAuthor">ผู้แต่ง: -</span>
+                        <span id="mangaDetailStatus">สถานะ: -</span>
+                        <span id="mangaDetailGenre">ประเภท: -</span>
+                    </div>
+                    <div class="manga-description" id="mangaDetailDescription">
+                        ไม่มีรายละเอียด
+                    </div>
+                </div>
+            </div>
+
+            <div class="chapter-list">
+                <h2 class="section-title">ตอนทั้งหมด</h2>
+                <div id="chapterListContainer">
+                    <div class="loading">กำลังโหลดข้อมูล...</div>
+                </div>
+            </div>
         </section>
 
         <!-- หน้าอ่านมังงะ -->
@@ -401,6 +535,7 @@
         const allMangaSection = document.getElementById('allMangaSection');
         const searchResultsSection = document.getElementById('searchResultsSection');
         const searchResultsContainer = document.getElementById('searchResultsContainer');
+        const mangaDetailsSection = document.getElementById('mangaDetailsSection');
         const readerSection = document.getElementById('readerSection');
         const featuredManga = document.getElementById('featuredManga');
         const recentUpdates = document.getElementById('recentUpdates');
@@ -416,6 +551,15 @@
         const prevPageBtn = document.getElementById('prevPageBtn');
         const nextPageBtn = document.getElementById('nextPageBtn');
         const readerLoading = document.getElementById('readerLoading');
+        
+        // องค์ประกอบใหม่สำหรับหน้ารายละเอียดมังงะ
+        const mangaDetailCover = document.getElementById('mangaDetailCover');
+        const mangaDetailTitle = document.getElementById('mangaDetailTitle');
+        const mangaDetailAuthor = document.getElementById('mangaDetailAuthor');
+        const mangaDetailStatus = document.getElementById('mangaDetailStatus');
+        const mangaDetailGenre = document.getElementById('mangaDetailGenre');
+        const mangaDetailDescription = document.getElementById('mangaDetailDescription');
+        const chapterListContainer = document.getElementById('chapterListContainer');
 
         // Event Listeners
         homeLink.addEventListener('click', showHome);
@@ -454,6 +598,7 @@
             homeSection.style.display = 'block';
             allMangaSection.style.display = 'none';
             searchResultsSection.style.display = 'none';
+            mangaDetailsSection.style.display = 'none';
             readerSection.style.display = 'none';
             renderHomePage();
         }
@@ -463,6 +608,7 @@
             homeSection.style.display = 'none';
             allMangaSection.style.display = 'block';
             searchResultsSection.style.display = 'none';
+            mangaDetailsSection.style.display = 'none';
             readerSection.style.display = 'none';
             renderAllManga();
         }
@@ -471,9 +617,66 @@
         function showSearchResults() {
             homeSection.style.display = 'none';
             allMangaSection.style.display = 'none';
+            mangaDetailsSection.style.display = 'none';
             searchResultsSection.style.display = 'block';
             readerSection.style.display = 'none';
             renderSearchResults();
+        }
+        
+        // ฟังก์ชันแสดงรายละเอียดมังงะ
+        function showMangaDetails(mangaId) {
+            currentManga = mangaData.find(m => m.id === mangaId);
+            if (!currentManga) return;
+
+            homeSection.style.display = 'none';
+            allMangaSection.style.display = 'none';
+            searchResultsSection.style.display = 'none';
+            mangaDetailsSection.style.display = 'block';
+            readerSection.style.display = 'none';
+
+            // อัปเดตข้อมูลมังงะ
+            mangaDetailCover.src = currentManga.cover;
+            mangaDetailTitle.textContent = currentManga.title;
+            mangaDetailAuthor.textContent = `ผู้แต่ง: ${currentManga.author || 'ไม่ทราบ'}`;
+            mangaDetailStatus.textContent = `สถานะ: ${currentManga.status || 'ไม่ทราบ'}`;
+            mangaDetailGenre.textContent = `ประเภท: ${currentManga.genres?.join(', ') || 'ไม่ระบุ'}`;
+            mangaDetailDescription.textContent = currentManga.description || 'ไม่มีรายละเอียด';
+
+            // แสดงรายการตอน
+            renderChapterList();
+        }
+        
+        // ฟังก์ชันแสดงรายการตอน
+        function renderChapterList() {
+            chapterListContainer.innerHTML = '';
+            
+            if (!currentManga.chapters || currentManga.chapters.length === 0) {
+                chapterListContainer.innerHTML = '<div class="loading">ยังไม่มีตอน</div>';
+                return;
+            }
+            
+            // เรียงตอนจากมากไปน้อย (ตอนล่าสุดขึ้นก่อน)
+            const sortedChapters = [...currentManga.chapters].sort((a, b) => b.number - a.number);
+            
+            sortedChapters.forEach(chapter => {
+                const chapterItem = document.createElement('div');
+                chapterItem.className = 'chapter-item';
+                
+                const chapterInfo = document.createElement('div');
+                chapterInfo.innerHTML = `
+                    <div class="chapter-item-title">ตอนที่ ${chapter.number}${chapter.title ? ': ' + chapter.title : ''}</div>
+                    ${chapter.date ? `<div class="chapter-item-date">อัปเดตเมื่อ: ${chapter.date}</div>` : ''}
+                `;
+                
+                const readButton = document.createElement('button');
+                readButton.className = 'read-button';
+                readButton.textContent = 'อ่าน';
+                readButton.onclick = () => showReader(currentManga.id, chapter.number);
+                
+                chapterItem.appendChild(chapterInfo);
+                chapterItem.appendChild(readButton);
+                chapterListContainer.appendChild(chapterItem);
+            });
         }
         
         // ฟังก์ชันแสดง Reader
@@ -487,6 +690,7 @@
             homeSection.style.display = 'none';
             allMangaSection.style.display = 'none';
             searchResultsSection.style.display = 'none';
+            mangaDetailsSection.style.display = 'none';
             readerSection.style.display = 'block';
 
             loadChapter();
@@ -763,20 +967,6 @@
             `;
             
             return card;
-        }
-        
-        // ฟังก์ชันแสดงรายละเอียดมังงะ
-        function showMangaDetails(mangaId) {
-            const manga = mangaData.find(m => m.id === mangaId);
-            if (!manga) return;
-
-            // สร้าง Modal หรือเปลี่ยนหน้าเพื่อแสดงรายละเอียด
-            // ในที่นี้เราจะแสดงตอนแรกของมังงะนั้น
-            if (manga.chapters && manga.chapters.length > 0) {
-                showReader(mangaId, manga.chapters[0].number);
-            } else {
-                alert('มังงะนี้ยังไม่มีตอน');
-            }
         }
         
         // เปิดใช้งานฟังก์ชัน global

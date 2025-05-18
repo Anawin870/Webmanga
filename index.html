@@ -31,6 +31,37 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
+        .header-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .search-container {
+            display: flex;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px 0 0 4px;
+            font-size: 1rem;
+        }
+
+        .search-button {
+            padding: 0.5rem 1rem;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
         nav {
             display: flex;
             justify-content: center;
@@ -56,7 +87,7 @@
             padding: 1rem;
             max-width: 1200px;
             margin: 0 auto;
-            min-height: calc(100vh - 120px);
+            min-height: calc(100vh - 180px);
         }
 
         /* หน้าหลัก */
@@ -127,6 +158,18 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
+        .chapter-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .chapter-select {
+            padding: 0.5rem;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
         .nav-button {
             padding: 0.5rem 1rem;
             background-color: #2c3e50;
@@ -190,6 +233,15 @@
             color: #666;
         }
 
+        /* Search Results */
+        .search-results {
+            margin: 1rem 0;
+            padding: 1rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
         /* Footer */
         footer {
             background-color: #2c3e50;
@@ -212,6 +264,13 @@
             .chapter-nav {
                 top: 56px;
                 padding: 0.5rem 0;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .chapter-controls {
+                justify-content: space-between;
+                width: 100%;
             }
             
             .nav-button {
@@ -221,13 +280,20 @@
             
             .chapter-title {
                 font-size: 1rem;
+                order: -1;
             }
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>MangaTH</h1>
+        <div class="header-content">
+            <h1>MangaTH</h1>
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="ค้นหามังงะ...">
+                <button id="searchButton" class="search-button">ค้นหา</button>
+            </div>
+        </div>
         <nav>
             <a href="#" id="homeLink">หน้าแรก</a>
             <a href="#" id="allMangaLink">มังงะทั้งหมด</a>
@@ -256,13 +322,24 @@
             </div>
         </section>
 
+        <!-- ผลการค้นหา -->
+        <section id="searchResultsSection" style="display: none;">
+            <h2 class="section-title">ผลการค้นหา</h2>
+            <div id="searchResultsContainer"></div>
+        </section>
+
         <!-- หน้าอ่านมังงะ -->
         <section id="readerSection" style="display: none;">
             <div class="reader-container">
                 <div class="chapter-nav">
-                    <button id="prevChapterBtn" class="nav-button">← ตอนก่อนหน้า</button>
+                    <div class="chapter-controls">
+                        <button id="prevChapterBtn" class="nav-button">← ตอนก่อนหน้า</button>
+                        <select id="chapterSelect" class="chapter-select">
+                            <option value="">เลือกตอน...</option>
+                        </select>
+                        <button id="nextChapterBtn" class="nav-button">ตอนถัดไป →</button>
+                    </div>
                     <h2 class="chapter-title" id="chapterTitle">ชื่อตอน</h2>
-                    <button id="nextChapterBtn" class="nav-button">ตอนถัดไป →</button>
                 </div>
 
                 <div class="page-info" id="pageInfo">หน้า 1/10</div>
@@ -280,7 +357,7 @@
     </main>
 
     <footer>
-        <p>&copy; 2025 MangaTH - เว็บอ่านมังงะเเปลไทย</p>
+        <p>&copy; 2023 MangaTH - เว็บอ่านมังงะ</p>
     </footer>
 
     <script>
@@ -297,29 +374,40 @@
         let currentManga = null;
         let currentChapterIndex = 0;
         let currentPageIndex = 0;
+        let searchResults = [];
 
         // DOM Elements
         const homeLink = document.getElementById('homeLink');
         const allMangaLink = document.getElementById('allMangaLink');
         const homeSection = document.getElementById('homeSection');
         const allMangaSection = document.getElementById('allMangaSection');
+        const searchResultsSection = document.getElementById('searchResultsSection');
+        const searchResultsContainer = document.getElementById('searchResultsContainer');
         const readerSection = document.getElementById('readerSection');
         const featuredManga = document.getElementById('featuredManga');
         const recentUpdates = document.getElementById('recentUpdates');
         const allMangaList = document.getElementById('allMangaList');
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
         const chapterTitle = document.getElementById('chapterTitle');
         const mangaPage = document.getElementById('mangaPage');
         const pageInfo = document.getElementById('pageInfo');
         const prevChapterBtn = document.getElementById('prevChapterBtn');
         const nextChapterBtn = document.getElementById('nextChapterBtn');
+        const chapterSelect = document.getElementById('chapterSelect');
         const prevPageBtn = document.getElementById('prevPageBtn');
         const nextPageBtn = document.getElementById('nextPageBtn');
 
         // Event Listeners
         homeLink.addEventListener('click', showHome);
         allMangaLink.addEventListener('click', showAllManga);
+        searchButton.addEventListener('click', performSearch);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performSearch();
+        });
         prevChapterBtn.addEventListener('click', showPrevChapter);
         nextChapterBtn.addEventListener('click', showNextChapter);
+        chapterSelect.addEventListener('change', changeChapter);
         prevPageBtn.addEventListener('click', showPrevPage);
         nextPageBtn.addEventListener('click', showNextPage);
 
@@ -346,6 +434,7 @@
         function showHome() {
             homeSection.style.display = 'block';
             allMangaSection.style.display = 'none';
+            searchResultsSection.style.display = 'none';
             readerSection.style.display = 'none';
             renderHomePage();
         }
@@ -354,8 +443,18 @@
         function showAllManga() {
             homeSection.style.display = 'none';
             allMangaSection.style.display = 'block';
+            searchResultsSection.style.display = 'none';
             readerSection.style.display = 'none';
             renderAllManga();
+        }
+
+        // ฟังก์ชันแสดงผลการค้นหา
+        function showSearchResults() {
+            homeSection.style.display = 'none';
+            allMangaSection.style.display = 'none';
+            searchResultsSection.style.display = 'block';
+            readerSection.style.display = 'none';
+            renderSearchResults();
         }
         
         // ฟังก์ชันแสดง Reader
@@ -368,9 +467,99 @@
 
             homeSection.style.display = 'none';
             allMangaSection.style.display = 'none';
+            searchResultsSection.style.display = 'none';
             readerSection.style.display = 'block';
 
             loadChapter();
+        }
+
+        // ฟังก์ชันค้นหา
+        function performSearch() {
+            const query = searchInput.value.trim().toLowerCase();
+            if (!query) return;
+
+            searchResults = [];
+
+            // ค้นหาจากชื่อมังงะ
+            mangaData.forEach(manga => {
+                if (manga.title.toLowerCase().includes(query)) {
+                    searchResults.push({
+                        type: 'manga',
+                        data: manga
+                    });
+                }
+
+                // ค้นหาจากชื่อตอน
+                manga.chapters.forEach(chapter => {
+                    if (chapter.title && chapter.title.toLowerCase().includes(query)) {
+                        searchResults.push({
+                            type: 'chapter',
+                            manga: manga,
+                            chapter: chapter
+                        });
+                    }
+                });
+            });
+
+            if (searchResults.length > 0) {
+                showSearchResults();
+            } else {
+                alert('ไม่พบผลลัพธ์ที่ตรงกับการค้นหา');
+            }
+        }
+
+        // ฟังก์ชันแสดงผลการค้นหา
+        function renderSearchResults() {
+            searchResultsContainer.innerHTML = '';
+
+            if (searchResults.length === 0) {
+                searchResultsContainer.innerHTML = '<div class="loading">ไม่พบผลลัพธ์</div>';
+                return;
+            }
+
+            const mangaResults = searchResults.filter(item => item.type === 'manga');
+            const chapterResults = searchResults.filter(item => item.type === 'chapter');
+
+            if (mangaResults.length > 0) {
+                const mangaSection = document.createElement('div');
+                mangaSection.innerHTML = '<h3>มังงะที่พบ</h3>';
+                
+                const mangaGrid = document.createElement('div');
+                mangaGrid.className = 'manga-grid';
+                
+                mangaResults.forEach(result => {
+                    const mangaCard = createMangaCard(result.data);
+                    mangaGrid.appendChild(mangaCard);
+                });
+                
+                mangaSection.appendChild(mangaGrid);
+                searchResultsContainer.appendChild(mangaSection);
+            }
+
+            if (chapterResults.length > 0) {
+                const chapterSection = document.createElement('div');
+                chapterSection.innerHTML = '<h3>ตอนที่พบ</h3>';
+                
+                const chapterList = document.createElement('div');
+                chapterList.className = 'manga-grid';
+                
+                chapterResults.forEach(result => {
+                    const chapterCard = document.createElement('div');
+                    chapterCard.className = 'manga-card';
+                    chapterCard.onclick = () => showReader(result.manga.id, result.chapter.number);
+                    
+                    chapterCard.innerHTML = `
+                        <img src="${result.manga.cover}" alt="${result.manga.title}" onerror="this.src='https://via.placeholder.com/150x200?text=No+Image'">
+                        <h3>${result.manga.title}</h3>
+                        <p>ตอนที่ ${result.chapter.number}: ${result.chapter.title || ''}</p>
+                    `;
+                    
+                    chapterList.appendChild(chapterCard);
+                });
+                
+                chapterSection.appendChild(chapterList);
+                searchResultsContainer.appendChild(chapterSection);
+            }
         }
 
         // ฟังก์ชันโหลดตอน
@@ -378,9 +567,28 @@
             const chapter = currentManga.chapters[currentChapterIndex];
             chapterTitle.textContent = `${currentManga.title} - ตอนที่ ${chapter.number} ${chapter.title ? ': ' + chapter.title : ''}`;
             
+            // อัปเดต dropdown เลือกตอน
+            chapterSelect.innerHTML = '<option value="">เลือกตอน...</option>';
+            currentManga.chapters.forEach((chap, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `ตอนที่ ${chap.number} ${chap.title ? ': ' + chap.title : ''}`;
+                if (index === currentChapterIndex) option.selected = true;
+                chapterSelect.appendChild(option);
+            });
+            
             currentPageIndex = 0;
             updatePage();
             updateNavButtons();
+        }
+
+        // ฟังก์ชันเปลี่ยนตอนจาก dropdown
+        function changeChapter() {
+            const selectedIndex = parseInt(chapterSelect.value);
+            if (!isNaN(selectedIndex) && selectedIndex >= 0 && selectedIndex < currentManga.chapters.length) {
+                currentChapterIndex = selectedIndex;
+                loadChapter();
+            }
         }
 
         // ฟังก์ชันอัปเดตหน้า
@@ -525,7 +733,7 @@
         function showMangaDetails(mangaId) {
             const manga = mangaData.find(m => m.id === mangaId);
             if (!manga) return;
-            
+
             // สร้าง Modal หรือเปลี่ยนหน้าเพื่อแสดงรายละเอียด
             // ในที่นี้เราจะแสดงตอนแรกของมังงะนั้น
             if (manga.chapters && manga.chapters.length > 0) {

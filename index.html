@@ -89,8 +89,9 @@
         }
 
         .settings-option label {
-            margin-left: 0.5rem;
-            cursor: pointer;
+    margin-left: 0.5rem;
+    cursor: pointer;
+    color: #555; /* สีเทาเข้ม */
         }
 
         .mode-description {
@@ -655,7 +656,7 @@
         const searchInput = document.getElementById('searchInput');
         const searchButton = document.getElementById('searchButton');
         const chapterTitle = document.getElementById('chapterTitle');
-        const mangaPage = document.getElementById('mangaPage');
+        let mangaPage = document.getElementById('mangaPage');
         const pageInfo = document.getElementById('pageInfo');
         const prevChapterBtn = document.getElementById('prevChapterBtn');
         const nextChapterBtn = document.getElementById('nextChapterBtn');
@@ -706,16 +707,54 @@
             settingsDropdown.classList.toggle('show');
         }
 
-        // ฟังก์ชันเปลี่ยนโหมดการอ่าน
+        // ฟังก์ชันเปลี่ยนโหมดการอ่าน (แก้ไขแล้ว)
         function changeReadingMode() {
-            readingMode = document.querySelector('input[name="readingMode"]:checked').value;
+            const newMode = document.querySelector('input[name="readingMode"]:checked').value;
             
+            // ถ้าโหมดไม่เปลี่ยนแปลง ไม่ต้องทำอะไร
+            if (readingMode === newMode) {
+                settingsDropdown.classList.remove('show');
+                return;
+            }
+            
+            readingMode = newMode;
+            
+            // บันทึกการตั้งค่าใน localStorage
+            localStorage.setItem('readingMode', readingMode);
+            
+            // ถ้ากำลังอยู่ในหน้าอ่านมังงะ ให้เปลี่ยนโหมดทันที
             if (readerSection.style.display === 'block') {
-                loadChapter();
+                if (readingMode === 'webtoon') {
+                    readerSection.classList.add('webtoon-mode');
+                    loadWebtoonMode();
+                } else {
+                    readerSection.classList.remove('webtoon-mode');
+                    // รีเซ็ตตำแหน่งหน้าปัจจุบันและโหลดหน้าใหม่
+                    currentPageIndex = 0;
+                    
+                    // ล้างและสร้าง page-container ใหม่
+                    const pageContainer = document.querySelector('.page-container');
+                    pageContainer.innerHTML = '';
+                    
+                    // สร้างองค์ประกอบใหม่
+                    pageContainer.appendChild(readerLoading);
+                    const img = document.createElement('img');
+                    img.id = 'mangaPage';
+                    img.className = 'manga-page';
+                    img.alt = 'หน้ามังงะ';
+                    img.onerror = function() {
+                        this.src = 'https://via.placeholder.com/800x1200?text=ไม่พบภาพ';
+                    };
+                    pageContainer.appendChild(img);
+                    
+                    // อัปเดต DOM reference
+                    mangaPage = document.getElementById('mangaPage');
+                    
+                    updatePage();
+                }
             }
             
             settingsDropdown.classList.remove('show');
-            localStorage.setItem('readingMode', readingMode);
         }
 
         // ฟังก์ชันโหลดข้อมูลจาก GitHub Raw
@@ -970,7 +1009,7 @@
             const chapter = currentManga.chapters[currentChapterIndex];
             const pageContainer = document.querySelector('.page-container');
             
-            // ลบหน้าทั้งหมดที่มีอยู่ (แก้ไขให้ล้างทั้งหมดก่อนโหลดใหม่)
+            // ล้างหน้าทั้งหมด
             pageContainer.innerHTML = '';
             pageContainer.appendChild(readerLoading);
             
@@ -1005,12 +1044,15 @@
             }
         }
 
-        // ฟังก์ชันอัปเดตหน้า
+        // ฟังก์ชันอัปเดตหน้า (แก้ไขแล้ว)
         function updatePage() {
             const chapter = currentManga.chapters[currentChapterIndex];
             if (chapter.pages && chapter.pages.length > 0) {
                 readerLoading.style.display = 'block';
                 mangaPage.style.display = 'none';
+                
+                // ตั้งค่า src เพื่อเริ่มโหลดรูปภาพ (แก้ไขให้โหลดเสมอ)
+                mangaPage.src = chapter.pages[currentPageIndex];
                 
                 mangaPage.onload = function() {
                     readerLoading.style.display = 'none';
@@ -1020,9 +1062,9 @@
                 mangaPage.onerror = function() {
                     readerLoading.style.display = 'none';
                     mangaPage.style.display = 'block';
+                    this.src = 'https://via.placeholder.com/800x1200?text=ไม่พบภาพ';
                 };
                 
-                mangaPage.src = chapter.pages[currentPageIndex];
                 pageInfo.textContent = `หน้า ${currentPageIndex + 1}/${chapter.pages.length}`;
             }
             updateNavButtons();

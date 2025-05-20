@@ -36,6 +36,68 @@
             flex-direction: column;
             align-items: center;
             gap: 1rem;
+            position: relative;
+        }
+
+        .settings-button {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+
+        .settings-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .settings-dropdown {
+            position: absolute;
+            left: 1rem;
+            top: 100%;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            padding: 1rem;
+            z-index: 110;
+            display: none;
+            min-width: 250px;
+            text-align: left;
+        }
+
+        .settings-dropdown.show {
+            display: block;
+        }
+
+        .settings-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+
+        .settings-option {
+            margin: 0.5rem 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .settings-option label {
+            margin-left: 0.5rem;
+            cursor: pointer;
+        }
+
+        .mode-description {
+            font-size: 0.8rem;
+            color: #666;
+            margin: 0 0 0.5rem 1.8rem;
+            line-height: 1.4;
         }
 
         .search-container {
@@ -211,6 +273,23 @@
             margin-bottom: 1rem;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             border-radius: 4px;
+            display: none;
+        }
+
+        /* สไตล์สำหรับโหมด Webtoon */
+        .webtoon-mode .manga-page {
+            display: block;
+            margin-bottom: 0;
+            border-radius: 0;
+            box-shadow: none;
+            border-bottom: 1px solid #eee;
+        }
+
+        .webtoon-mode .page-controls {
+            display: none;
+        }
+
+        .webtoon-mode .page-info {
             display: none;
         }
 
@@ -406,12 +485,44 @@
                 flex: 0 0 auto;
                 max-width: 100%;
             }
+
+            .settings-button {
+                position: static;
+                transform: none;
+                margin-right: auto;
+                margin-bottom: 0.5rem;
+            }
+
+            .settings-dropdown {
+                left: 0;
+                right: 0;
+                width: 100%;
+            }
+
+            .mode-description {
+                margin-left: 1.5rem;
+            }
         }
     </style>
 </head>
 <body>
     <header>
         <div class="header-content">
+            <button class="settings-button" id="settingsButton">⚙️</button>
+            <div class="settings-dropdown" id="settingsDropdown">
+                <div class="settings-title">การตั้งค่าการอ่าน</div>
+                <div class="settings-option">
+                    <input type="radio" id="pageMode" name="readingMode" value="page" checked>
+                    <label for="pageMode">โหมดทีละหน้า</label>
+                </div>
+                <div class="mode-description">อ่านทีละหน้า เหมาะสำหรับมังงะทั่วไป</div>
+                
+                <div class="settings-option">
+                    <input type="radio" id="webtoonMode" name="readingMode" value="webtoon">
+                    <label for="webtoonMode">โหมดเลื่อนลง (Webtoon)</label>
+                </div>
+                <div class="mode-description">อ่านแบบเลื่อนลงต่อเนื่อง เหมาะสำหรับเว็บตูน</div>
+            </div>
             <h1>MangaTH</h1>
             <div class="search-container">
                 <input type="text" id="searchInput" class="search-input" placeholder="ค้นหามังงะ...">
@@ -514,9 +625,9 @@
 
     <script>
         // กำหนดค่า GitHub Repository
-        const GITHUB_USERNAME = 'Anawin870'; // เปลี่ยนเป็นชื่อ GitHub ของคุณ
-        const GITHUB_REPO = 'Webmanga';     // เปลี่ยนเป็นชื่อ repository ของคุณ
-        const DATA_FILE = 'manga-data.json'; // ต้องตรงกับชื่อไฟล์ใน repository
+        const GITHUB_USERNAME = 'Anawin870';
+        const GITHUB_REPO = 'Webmanga2';
+        const DATA_FILE = 'manga-data.json';
         
         // URL สำหรับดึงข้อมูล
         const RAW_DATA_URL = `https://raw.githubusercontent.com/Anawin870/Webmanga2/refs/heads/main/manga-data.json`;
@@ -527,6 +638,7 @@
         let currentChapterIndex = 0;
         let currentPageIndex = 0;
         let searchResults = [];
+        let readingMode = 'page';
 
         // DOM Elements
         const homeLink = document.getElementById('homeLink');
@@ -551,6 +663,10 @@
         const prevPageBtn = document.getElementById('prevPageBtn');
         const nextPageBtn = document.getElementById('nextPageBtn');
         const readerLoading = document.getElementById('readerLoading');
+        const settingsButton = document.getElementById('settingsButton');
+        const settingsDropdown = document.getElementById('settingsDropdown');
+        const pageModeRadio = document.getElementById('pageMode');
+        const webtoonModeRadio = document.getElementById('webtoonMode');
         
         // องค์ประกอบใหม่สำหรับหน้ารายละเอียดมังงะ
         const mangaDetailCover = document.getElementById('mangaDetailCover');
@@ -573,6 +689,34 @@
         chapterSelect.addEventListener('change', changeChapter);
         prevPageBtn.addEventListener('click', showPrevPage);
         nextPageBtn.addEventListener('click', showNextPage);
+        settingsButton.addEventListener('click', toggleSettings);
+        pageModeRadio.addEventListener('change', changeReadingMode);
+        webtoonModeRadio.addEventListener('change', changeReadingMode);
+        
+        // ปิดเมนูการตั้งค่าเมื่อคลิกที่อื่น
+        document.addEventListener('click', (e) => {
+            if (!settingsButton.contains(e.target) && !settingsDropdown.contains(e.target)) {
+                settingsDropdown.classList.remove('show');
+            }
+        });
+
+        // ฟังก์ชันเปิด/ปิดเมนูการตั้งค่า
+        function toggleSettings(e) {
+            e.stopPropagation();
+            settingsDropdown.classList.toggle('show');
+        }
+
+        // ฟังก์ชันเปลี่ยนโหมดการอ่าน
+        function changeReadingMode() {
+            readingMode = document.querySelector('input[name="readingMode"]:checked').value;
+            
+            if (readerSection.style.display === 'block') {
+                loadChapter();
+            }
+            
+            settingsDropdown.classList.remove('show');
+            localStorage.setItem('readingMode', readingMode);
+        }
 
         // ฟังก์ชันโหลดข้อมูลจาก GitHub Raw
         async function loadData() {
@@ -585,6 +729,16 @@
                 
                 const data = await response.json();
                 mangaData = data.manga || [];
+                
+                const savedMode = localStorage.getItem('readingMode');
+                if (savedMode) {
+                    readingMode = savedMode;
+                    if (readingMode === 'page') {
+                        pageModeRadio.checked = true;
+                    } else {
+                        webtoonModeRadio.checked = true;
+                    }
+                }
                 
                 renderHomePage();
             } catch (error) {
@@ -634,7 +788,6 @@
             mangaDetailsSection.style.display = 'block';
             readerSection.style.display = 'none';
 
-            // อัปเดตข้อมูลมังงะ
             mangaDetailCover.src = currentManga.cover;
             mangaDetailTitle.textContent = currentManga.title;
             mangaDetailAuthor.textContent = `ผู้แต่ง: ${currentManga.author || 'ไม่ทราบ'}`;
@@ -642,7 +795,6 @@
             mangaDetailGenre.textContent = `ประเภท: ${currentManga.genres?.join(', ') || 'ไม่ระบุ'}`;
             mangaDetailDescription.textContent = currentManga.description || 'ไม่มีรายละเอียด';
 
-            // แสดงรายการตอน
             renderChapterList();
         }
         
@@ -655,7 +807,6 @@
                 return;
             }
             
-            // เรียงตอนจากมากไปน้อย (ตอนล่าสุดขึ้นก่อน)
             const sortedChapters = [...currentManga.chapters].sort((a, b) => b.number - a.number);
             
             sortedChapters.forEach(chapter => {
@@ -693,6 +844,12 @@
             mangaDetailsSection.style.display = 'none';
             readerSection.style.display = 'block';
 
+            if (readingMode === 'webtoon') {
+                readerSection.classList.add('webtoon-mode');
+            } else {
+                readerSection.classList.remove('webtoon-mode');
+            }
+
             loadChapter();
         }
 
@@ -703,7 +860,6 @@
 
             searchResults = [];
 
-            // ค้นหาจากชื่อมังงะ
             mangaData.forEach(manga => {
                 if (manga.title.toLowerCase().includes(query)) {
                     searchResults.push({
@@ -712,7 +868,6 @@
                     });
                 }
 
-                // ค้นหาจากชื่อตอน
                 manga.chapters.forEach(chapter => {
                     if (chapter.title && chapter.title.toLowerCase().includes(query)) {
                         searchResults.push({
@@ -790,7 +945,6 @@
             const chapter = currentManga.chapters[currentChapterIndex];
             chapterTitle.textContent = `${currentManga.title} - ตอนที่ ${chapter.number} ${chapter.title ? ': ' + chapter.title : ''}`;
             
-            // อัปเดต dropdown เลือกตอน
             chapterSelect.innerHTML = '<option value="">เลือกตอน...</option>';
             currentManga.chapters.forEach((chap, index) => {
                 const option = document.createElement('option');
@@ -801,8 +955,45 @@
             });
             
             currentPageIndex = 0;
-            updatePage();
+            
+            if (readingMode === 'webtoon') {
+                loadWebtoonMode();
+            } else {
+                updatePage();
+            }
+            
             updateNavButtons();
+        }
+
+        // ฟังก์ชันโหลดโหมด Webtoon (แก้ไขแล้ว)
+        function loadWebtoonMode() {
+            const chapter = currentManga.chapters[currentChapterIndex];
+            const pageContainer = document.querySelector('.page-container');
+            
+            // ลบหน้าทั้งหมดที่มีอยู่ (แก้ไขให้ล้างทั้งหมดก่อนโหลดใหม่)
+            pageContainer.innerHTML = '';
+            pageContainer.appendChild(readerLoading);
+            
+            // แสดง loading
+            readerLoading.style.display = 'block';
+            
+            // สร้างและโหลดหน้าทั้งหมด
+            chapter.pages.forEach((pageUrl, index) => {
+                const img = document.createElement('img');
+                img.className = 'manga-page';
+                img.src = pageUrl;
+                img.alt = `หน้าที่ ${index + 1}`;
+                img.onerror = function() {
+                    this.src = 'https://via.placeholder.com/800x1200?text=ไม่พบภาพ';
+                };
+                
+                pageContainer.appendChild(img);
+            });
+            
+            // ซ่อน loading เมื่อโหลดเสร็จ
+            setTimeout(() => {
+                readerLoading.style.display = 'none';
+            }, 500);
         }
 
         // ฟังก์ชันเปลี่ยนตอนจาก dropdown
@@ -818,23 +1009,19 @@
         function updatePage() {
             const chapter = currentManga.chapters[currentChapterIndex];
             if (chapter.pages && chapter.pages.length > 0) {
-                // แสดงข้อความกำลังโหลด
                 readerLoading.style.display = 'block';
                 mangaPage.style.display = 'none';
                 
-                // เมื่อรูปภาพโหลดเสร็จ
                 mangaPage.onload = function() {
                     readerLoading.style.display = 'none';
                     mangaPage.style.display = 'block';
                 };
                 
-                // เมื่อรูปภาพโหลดไม่สำเร็จ
                 mangaPage.onerror = function() {
                     readerLoading.style.display = 'none';
                     mangaPage.style.display = 'block';
                 };
                 
-                // ตั้งค่า src เพื่อเริ่มโหลดรูปภาพ
                 mangaPage.src = chapter.pages[currentPageIndex];
                 pageInfo.textContent = `หน้า ${currentPageIndex + 1}/${chapter.pages.length}`;
             }
@@ -845,13 +1032,13 @@
         function updateNavButtons() {
             const chapter = currentManga.chapters[currentChapterIndex];
             
-            // ปุ่มตอน
             prevChapterBtn.disabled = currentChapterIndex <= 0;
             nextChapterBtn.disabled = currentChapterIndex >= currentManga.chapters.length - 1;
             
-            // ปุ่มหน้า
-            prevPageBtn.disabled = currentPageIndex <= 0;
-            nextPageBtn.disabled = currentPageIndex >= chapter.pages.length - 1;
+            if (readingMode === 'page') {
+                prevPageBtn.disabled = currentPageIndex <= 0;
+                nextPageBtn.disabled = currentPageIndex >= chapter.pages.length - 1;
+            }
         }
 
         // ฟังก์ชันเปลี่ยนหน้า
@@ -887,7 +1074,6 @@
 
         // ฟังก์ชันแสดงหน้าแรก
         function renderHomePage() {
-            // แสดงเรื่องแนะนำ (สุ่มมา 4 เรื่อง)
             featuredManga.innerHTML = '';
             
             if (mangaData.length === 0) {
@@ -895,7 +1081,6 @@
                 return;
             }
             
-            // สุ่มเลือกมังงะมาแสดง
             const shuffled = [...mangaData].sort(() => 0.5 - Math.random());
             const selected = shuffled.slice(0, 4);
             
@@ -904,10 +1089,8 @@
                 featuredManga.appendChild(mangaCard);
             });
             
-            // แสดงอัปเดตล่าสุด (5 ตอนล่าสุด)
             recentUpdates.innerHTML = '';
             
-            // รวบรวมทุกตอนจากทุกมังงะ
             let allChapters = [];
             mangaData.forEach(manga => {
                 manga.chapters.forEach(chapter => {
@@ -920,10 +1103,8 @@
                 });
             });
             
-            // เรียงตามเลขตอน (จากมากไปน้อย)
             allChapters.sort((a, b) => b.chapter.number - a.chapter.number);
             
-            // แสดง 5 ตอนล่าสุด
             allChapters.slice(0, 5).forEach(item => {
                 const chapterCard = document.createElement('div');
                 chapterCard.className = 'manga-card';

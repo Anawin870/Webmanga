@@ -89,9 +89,9 @@
         }
 
         .settings-option label {
-    margin-left: 0.5rem;
-    cursor: pointer;
-    color: #555; /* สีเทาเข้ม */
+            margin-left: 0.5rem;
+            cursor: pointer;
+            color: #555;
         }
 
         .mode-description {
@@ -437,6 +437,13 @@
             background-color: #c0392b;
         }
 
+        /* หน้าประวัติการอ่าน */
+        .history-time {
+            font-size: 0.7rem;
+            color: #7f8c8d;
+            padding: 0 0.5rem 0.5rem;
+        }
+
         /* Footer */
         footer {
             background-color: #2c3e50;
@@ -533,6 +540,7 @@
         <nav>
             <a href="#" id="homeLink">หน้าแรก</a>
             <a href="#" id="allMangaLink">มังงะทั้งหมด</a>
+            <a href="#" id="historyLink">ประวัติการอ่าน</a>
         </nav>
     </header>
 
@@ -618,6 +626,14 @@
                 </div>
             </div>
         </section>
+
+        <!-- หน้าประวัติการอ่าน -->
+        <section id="historySection" style="display: none;">
+            <h2 class="section-title">ประวัติการอ่าน</h2>
+            <div class="manga-grid" id="historyList">
+                <div class="loading">กำลังโหลดประวัติ...</div>
+            </div>
+        </section>
     </main>
 
     <footer>
@@ -644,8 +660,10 @@
         // DOM Elements
         const homeLink = document.getElementById('homeLink');
         const allMangaLink = document.getElementById('allMangaLink');
+        const historyLink = document.getElementById('historyLink');
         const homeSection = document.getElementById('homeSection');
         const allMangaSection = document.getElementById('allMangaSection');
+        const historySection = document.getElementById('historySection');
         const searchResultsSection = document.getElementById('searchResultsSection');
         const searchResultsContainer = document.getElementById('searchResultsContainer');
         const mangaDetailsSection = document.getElementById('mangaDetailsSection');
@@ -653,6 +671,7 @@
         const featuredManga = document.getElementById('featuredManga');
         const recentUpdates = document.getElementById('recentUpdates');
         const allMangaList = document.getElementById('allMangaList');
+        const historyList = document.getElementById('historyList');
         const searchInput = document.getElementById('searchInput');
         const searchButton = document.getElementById('searchButton');
         const chapterTitle = document.getElementById('chapterTitle');
@@ -681,6 +700,7 @@
         // Event Listeners
         homeLink.addEventListener('click', showHome);
         allMangaLink.addEventListener('click', showAllManga);
+        historyLink.addEventListener('click', showHistory);
         searchButton.addEventListener('click', performSearch);
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') performSearch();
@@ -707,7 +727,7 @@
             settingsDropdown.classList.toggle('show');
         }
 
-        // ฟังก์ชันเปลี่ยนโหมดการอ่าน (แก้ไขแล้ว)
+        // ฟังก์ชันเปลี่ยนโหมดการอ่าน
         function changeReadingMode() {
             const newMode = document.querySelector('input[name="readingMode"]:checked').value;
             
@@ -790,6 +810,7 @@
         function showHome() {
             homeSection.style.display = 'block';
             allMangaSection.style.display = 'none';
+            historySection.style.display = 'none';
             searchResultsSection.style.display = 'none';
             mangaDetailsSection.style.display = 'none';
             readerSection.style.display = 'none';
@@ -800,16 +821,30 @@
         function showAllManga() {
             homeSection.style.display = 'none';
             allMangaSection.style.display = 'block';
+            historySection.style.display = 'none';
             searchResultsSection.style.display = 'none';
             mangaDetailsSection.style.display = 'none';
             readerSection.style.display = 'none';
             renderAllManga();
         }
 
+        // ฟังก์ชันแสดงประวัติการอ่าน
+        function showHistory() {
+            homeSection.style.display = 'none';
+            allMangaSection.style.display = 'none';
+            searchResultsSection.style.display = 'none';
+            mangaDetailsSection.style.display = 'none';
+            readerSection.style.display = 'none';
+            historySection.style.display = 'block';
+            
+            renderHistory();
+        }
+
         // ฟังก์ชันแสดงผลการค้นหา
         function showSearchResults() {
             homeSection.style.display = 'none';
             allMangaSection.style.display = 'none';
+            historySection.style.display = 'none';
             mangaDetailsSection.style.display = 'none';
             searchResultsSection.style.display = 'block';
             readerSection.style.display = 'none';
@@ -823,6 +858,7 @@
 
             homeSection.style.display = 'none';
             allMangaSection.style.display = 'none';
+            historySection.style.display = 'none';
             searchResultsSection.style.display = 'none';
             mangaDetailsSection.style.display = 'block';
             readerSection.style.display = 'none';
@@ -877,8 +913,12 @@
             currentChapterIndex = currentManga.chapters.findIndex(c => c.number === chapterNumber);
             if (currentChapterIndex === -1) return;
 
+            // บันทึกประวัติการอ่าน
+            saveReadingHistory(mangaId, chapterNumber);
+
             homeSection.style.display = 'none';
             allMangaSection.style.display = 'none';
+            historySection.style.display = 'none';
             searchResultsSection.style.display = 'none';
             mangaDetailsSection.style.display = 'none';
             readerSection.style.display = 'block';
@@ -890,6 +930,73 @@
             }
 
             loadChapter();
+        }
+
+        // ฟังก์ชันบันทึกประวัติการอ่าน
+        function saveReadingHistory(mangaId, chapterNumber) {
+            let history = JSON.parse(localStorage.getItem('readingHistory')) || [];
+            
+            // ลบรายการเดิมถ้ามี
+            history = history.filter(item => item.mangaId !== mangaId);
+            
+            // เพิ่มรายการใหม่ที่ด้านบน
+            history.unshift({
+                mangaId: mangaId,
+                chapterNumber: chapterNumber,
+                timestamp: new Date().getTime()
+            });
+            
+            // เก็บเพียง 50 รายการล่าสุด
+            if (history.length > 50) {
+                history = history.slice(0, 50);
+            }
+            
+            localStorage.setItem('readingHistory', JSON.stringify(history));
+        }
+
+        // ฟังก์ชันแสดงประวัติการอ่าน
+        function renderHistory() {
+            const history = JSON.parse(localStorage.getItem('readingHistory')) || [];
+            
+            if (history.length === 0) {
+                historyList.innerHTML = '<div class="loading">ยังไม่มีประวัติการอ่าน</div>';
+                return;
+            }
+            
+            historyList.innerHTML = '';
+            
+            history.forEach(item => {
+                const manga = mangaData.find(m => m.id === item.mangaId);
+                if (!manga) return;
+                
+                const chapter = manga.chapters.find(c => c.number === item.chapterNumber);
+                if (!chapter) return;
+                
+                const historyCard = document.createElement('div');
+                historyCard.className = 'manga-card';
+                historyCard.onclick = () => showReader(manga.id, chapter.number);
+                
+                historyCard.innerHTML = `
+                    <img src="${manga.cover}" alt="${manga.title}" onerror="this.src='https://via.placeholder.com/150x200?text=No+Image'">
+                    <h3>${manga.title}</h3>
+                    <p>ตอนที่ ${chapter.number}</p>
+                    <p class="history-time">${formatTime(item.timestamp)}</p>
+                `;
+                
+                historyList.appendChild(historyCard);
+            });
+        }
+
+        // ฟังก์ชันจัดรูปแบบเวลา
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleDateString('th-TH', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
         }
 
         // ฟังก์ชันค้นหา
@@ -1004,7 +1111,7 @@
             updateNavButtons();
         }
 
-        // ฟังก์ชันโหลดโหมด Webtoon (แก้ไขแล้ว)
+        // ฟังก์ชันโหลดโหมด Webtoon
         function loadWebtoonMode() {
             const chapter = currentManga.chapters[currentChapterIndex];
             const pageContainer = document.querySelector('.page-container');
@@ -1044,14 +1151,14 @@
             }
         }
 
-        // ฟังก์ชันอัปเดตหน้า (แก้ไขแล้ว)
+        // ฟังก์ชันอัปเดตหน้า
         function updatePage() {
             const chapter = currentManga.chapters[currentChapterIndex];
             if (chapter.pages && chapter.pages.length > 0) {
                 readerLoading.style.display = 'block';
                 mangaPage.style.display = 'none';
                 
-                // ตั้งค่า src เพื่อเริ่มโหลดรูปภาพ (แก้ไขให้โหลดเสมอ)
+                // ตั้งค่า src เพื่อเริ่มโหลดรูปภาพ
                 mangaPage.src = chapter.pages[currentPageIndex];
                 
                 mangaPage.onload = function() {

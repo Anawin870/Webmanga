@@ -29,6 +29,11 @@
             top: 0;
             z-index: 100;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        header.hidden {
+            transform: translateY(-100%);
         }
 
         .header-content {
@@ -219,6 +224,11 @@
             background-color: #f8f9fa;
             z-index: 90;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .chapter-nav.hidden {
+            transform: translateY(-100%);
         }
 
         .chapter-controls {
@@ -453,6 +463,83 @@
             margin-top: 2rem;
         }
 
+        /* ปุ่มควบคุม Reader */
+        .reader-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .reader-control-button {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+
+        .reader-control-button:hover {
+            background-color: #e74c3c;
+            transform: scale(1.1);
+        }
+
+        .toggle-header-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 200;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(44, 62, 80, 0.8);
+            color: white;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+
+        .toggle-header-button:hover {
+            background-color: rgba(231, 76, 60, 0.8);
+            transform: scale(1.1);
+        }
+
+        /* Webtoon Navigation */
+        .webtoon-navigation {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(44, 62, 80, 0.9);
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            z-index: 90;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .webtoon-navigation.show {
+            transform: translateY(0);
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             main {
@@ -509,6 +596,12 @@
 
             .mode-description {
                 margin-left: 1.5rem;
+            }
+
+            .reader-control-button {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
             }
         }
     </style>
@@ -601,8 +694,9 @@
 
         <!-- หน้าอ่านมังงะ -->
         <section id="readerSection" style="display: none;">
+            <button class="toggle-header-button" id="toggleHeaderButton">☰</button>
             <div class="reader-container">
-                <div class="chapter-nav">
+                <div class="chapter-nav" id="chapterNav">
                     <div class="chapter-controls">
                         <button id="prevChapterBtn" class="nav-button">← ตอนก่อนหน้า</button>
                         <select id="chapterSelect" class="chapter-select">
@@ -624,6 +718,18 @@
                     <button id="prevPageBtn" class="nav-button">← หน้าก่อน</button>
                     <button id="nextPageBtn" class="nav-button">หน้าถัดไป →</button>
                 </div>
+            </div>
+
+            <!-- ปุ่มควบคุม Reader -->
+            <div class="reader-controls" id="readerControls">
+                <button class="reader-control-button" id="scrollToTopBtn">↑</button>
+                <button class="reader-control-button" id="toggleHeaderBtn">☰</button>
+            </div>
+
+            <!-- Webtoon Navigation -->
+            <div class="webtoon-navigation" id="webtoonNavigation">
+                <button id="webtoonPrevChapter" class="nav-button">← ตอนก่อนหน้า</button>
+                <button id="webtoonNextChapter" class="nav-button">ตอนถัดไป →</button>
             </div>
         </section>
 
@@ -656,6 +762,8 @@
         let currentPageIndex = 0;
         let searchResults = [];
         let readingMode = 'page';
+        let isHeaderVisible = true;
+        let scrollTimeout = null;
 
         // DOM Elements
         const homeLink = document.getElementById('homeLink');
@@ -687,6 +795,14 @@
         const settingsDropdown = document.getElementById('settingsDropdown');
         const pageModeRadio = document.getElementById('pageMode');
         const webtoonModeRadio = document.getElementById('webtoonMode');
+        const toggleHeaderButton = document.getElementById('toggleHeaderButton');
+        const toggleHeaderBtn = document.getElementById('toggleHeaderBtn');
+        const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+        const chapterNav = document.getElementById('chapterNav');
+        const webtoonNavigation = document.getElementById('webtoonNavigation');
+        const webtoonPrevChapter = document.getElementById('webtoonPrevChapter');
+        const webtoonNextChapter = document.getElementById('webtoonNextChapter');
+        const readerControls = document.getElementById('readerControls');
         
         // องค์ประกอบใหม่สำหรับหน้ารายละเอียดมังงะ
         const mangaDetailCover = document.getElementById('mangaDetailCover');
@@ -713,6 +829,11 @@
         settingsButton.addEventListener('click', toggleSettings);
         pageModeRadio.addEventListener('change', changeReadingMode);
         webtoonModeRadio.addEventListener('change', changeReadingMode);
+        toggleHeaderButton.addEventListener('click', toggleHeader);
+        toggleHeaderBtn.addEventListener('click', toggleHeader);
+        scrollToTopBtn.addEventListener('click', scrollToTop);
+        webtoonPrevChapter.addEventListener('click', showPrevChapter);
+        webtoonNextChapter.addEventListener('click', showNextChapter);
         
         // ปิดเมนูการตั้งค่าเมื่อคลิกที่อื่น
         document.addEventListener('click', (e) => {
@@ -720,6 +841,70 @@
                 settingsDropdown.classList.remove('show');
             }
         });
+
+        // ตรวจสอบการเลื่อนในโหมดเว็บตูน
+        document.addEventListener('scroll', handleScroll);
+
+        // ฟังก์ชันจัดการการเลื่อน
+        function handleScroll() {
+            if (readingMode !== 'webtoon' || readerSection.style.display !== 'block') return;
+            
+            // ซ่อนแถบด้านบนเมื่อเลื่อนลง
+            if (window.scrollY > 100 && isHeaderVisible) {
+                toggleHeader(false);
+            } else if (window.scrollY <= 100 && !isHeaderVisible) {
+                toggleHeader(true);
+            }
+            
+            // ตรวจสอบว่าถึงด้านล่างของหน้าแล้วหรือไม่
+            const scrollPosition = window.scrollY + window.innerHeight;
+            const pageHeight = document.body.scrollHeight;
+            
+            if (pageHeight - scrollPosition < 100) {
+                webtoonNavigation.classList.add('show');
+            } else {
+                webtoonNavigation.classList.remove('show');
+            }
+            
+            // รีเซ็ต timeout สำหรับการซ่อนแถบ
+            if (scrollTimeout) {
+                clearTimeout(scrollTimeout);
+            }
+            
+            scrollTimeout = setTimeout(() => {
+                if (isHeaderVisible && window.scrollY > 100) {
+                    toggleHeader(false);
+                }
+            }, 2000);
+        }
+
+        // ฟังก์ชันเลื่อนขึ้นด้านบน
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // ฟังก์ชันเปิด/ปิดแถบด้านบน
+        function toggleHeader(show = null) {
+            if (show === null) {
+                isHeaderVisible = !isHeaderVisible;
+            } else {
+                isHeaderVisible = show;
+            }
+            
+            const header = document.querySelector('header');
+            const chapterNav = document.getElementById('chapterNav');
+            
+            if (isHeaderVisible) {
+                header.classList.remove('hidden');
+                chapterNav.classList.remove('hidden');
+            } else {
+                header.classList.add('hidden');
+                chapterNav.classList.add('hidden');
+            }
+        }
 
         // ฟังก์ชันเปิด/ปิดเมนูการตั้งค่า
         function toggleSettings(e) {
@@ -928,6 +1113,9 @@
             } else {
                 readerSection.classList.remove('webtoon-mode');
             }
+
+            // ซ่อนแถบด้านบนเมื่อเริ่มอ่าน
+            toggleHeader(false);
 
             loadChapter();
         }

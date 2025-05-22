@@ -17,6 +17,12 @@
             background-color: #f8f9fa;
             color: #333;
             line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #f0f0f0;
         }
 
         /* Header */
@@ -61,49 +67,6 @@
 
         .settings-button:hover {
             background-color: rgba(255, 255, 255, 0.2);
-        }
-
-        .settings-dropdown {
-            position: absolute;
-            left: 1rem;
-            top: 100%;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            padding: 1rem;
-            z-index: 110;
-            display: none;
-            min-width: 250px;
-            text-align: left;
-        }
-
-        .settings-dropdown.show {
-            display: block;
-        }
-
-        .settings-title {
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-            color: #2c3e50;
-        }
-
-        .settings-option {
-            margin: 0.5rem 0;
-            display: flex;
-            align-items: center;
-        }
-
-        .settings-option label {
-            margin-left: 0.5rem;
-            cursor: pointer;
-            color: #555;
-        }
-
-        .mode-description {
-            font-size: 0.8rem;
-            color: #666;
-            margin: 0 0 0.5rem 1.8rem;
-            line-height: 1.4;
         }
 
         .search-container {
@@ -166,6 +129,11 @@
             padding-bottom: 0.5rem;
         }
 
+        .dark-mode .section-title {
+            color: #f0f0f0;
+            border-bottom-color: #e74c3c;
+        }
+
         .manga-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -180,6 +148,11 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             transition: transform 0.3s;
             cursor: pointer;
+        }
+
+        .dark-mode .manga-card {
+            background: #2c3e50;
+            color: #f0f0f0;
         }
 
         .manga-card:hover {
@@ -207,6 +180,10 @@
             color: #666;
         }
 
+        .dark-mode .manga-card p {
+            color: #ccc;
+        }
+
         /* หน้าอ่านมังงะ */
         .reader-container {
             display: flex;
@@ -227,6 +204,11 @@
             transition: transform 0.3s ease;
         }
 
+        .dark-mode .chapter-nav {
+            background-color: #2c3e50;
+            color: white;
+        }
+
         .chapter-nav.hidden {
             transform: translateY(-100%);
         }
@@ -241,6 +223,13 @@
             padding: 0.5rem;
             border-radius: 4px;
             border: 1px solid #ddd;
+            background-color: white;
+        }
+
+        .dark-mode .chapter-select {
+            background-color: #34495e;
+            color: white;
+            border-color: #555;
         }
 
         .nav-button {
@@ -270,6 +259,10 @@
             font-size: 1.2rem;
         }
 
+        .dark-mode .chapter-title {
+            color: #f0f0f0;
+        }
+
         .page-container {
             width: 100%;
             max-width: 900px;
@@ -296,6 +289,10 @@
             border-bottom: 1px solid #eee;
         }
 
+        .dark-mode .webtoon-mode .manga-page {
+            border-bottom-color: #444;
+        }
+
         .webtoon-mode .page-controls {
             display: none;
         }
@@ -317,12 +314,20 @@
             margin-bottom: 1rem;
         }
 
+        .dark-mode .page-info {
+            color: #aaa;
+        }
+
         /* Loading */
         .loading {
             text-align: center;
             padding: 2rem;
             font-size: 1.2rem;
             color: #666;
+        }
+
+        .dark-mode .loading {
+            color: #aaa;
         }
 
         .reader-loading {
@@ -340,6 +345,11 @@
             width: 200px;
         }
 
+        .dark-mode .reader-loading {
+            background: rgba(44, 62, 80, 0.8);
+            color: #f0f0f0;
+        }
+
         /* Search Results */
         .search-results {
             margin: 1rem 0;
@@ -349,6 +359,10 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
+        .dark-mode .search-results {
+            background-color: #2c3e50;
+        }
+
         /* หน้ารายละเอียดมังงะ */
         .manga-details-section {
             display: none;
@@ -356,6 +370,10 @@
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             padding: 1.5rem;
+        }
+
+        .dark-mode .manga-details-section {
+            background-color: #2c3e50;
         }
 
         .manga-details-header {
@@ -394,12 +412,20 @@
             font-size: 1.8rem;
         }
 
+        .dark-mode .manga-title {
+            color: #f0f0f0;
+        }
+
         .manga-meta {
             display: flex;
             flex-wrap: wrap;
             gap: 1rem;
             margin-bottom: 1rem;
             color: #7f8c8d;
+        }
+
+        .dark-mode .manga-meta {
+            color: #aaa;
         }
 
         .manga-description {
@@ -420,8 +446,16 @@
             transition: background-color 0.2s;
         }
 
+        .dark-mode .chapter-item {
+            border-bottom-color: #444;
+        }
+
         .chapter-item:hover {
             background-color: #f8f9fa;
+        }
+
+        .dark-mode .chapter-item:hover {
+            background-color: #34495e;
         }
 
         .chapter-item-title {
@@ -431,6 +465,10 @@
         .chapter-item-date {
             color: #7f8c8d;
             font-size: 0.9rem;
+        }
+
+        .dark-mode .chapter-item-date {
+            color: #aaa;
         }
 
         .read-button {
@@ -452,6 +490,10 @@
             font-size: 0.7rem;
             color: #7f8c8d;
             padding: 0 0.5rem 0.5rem;
+        }
+
+        .dark-mode .history-time {
+            color: #aaa;
         }
 
         /* Footer */
@@ -495,31 +537,6 @@
             transform: scale(1.1);
         }
 
-        .toggle-header-button {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            z-index: 200;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: rgba(44, 62, 80, 0.8);
-            color: white;
-            border: none;
-            font-size: 1rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            transition: all 0.3s;
-        }
-
-        .toggle-header-button:hover {
-            background-color: rgba(231, 76, 60, 0.8);
-            transform: scale(1.1);
-        }
-
         /* Webtoon Navigation */
         .webtoon-navigation {
             position: fixed;
@@ -538,6 +555,145 @@
 
         .webtoon-navigation.show {
             transform: translateY(0);
+        }
+
+        /* แถบความคืบหน้า */
+        .progress-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background-color: #f0f0f0;
+            z-index: 99;
+        }
+
+        .dark-mode .progress-container {
+            background-color: #333;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: #e74c3c;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* เมนูตั้งค่า */
+        .settings-menu {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 300px;
+            max-width: 90%;
+            background-color: white;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            z-index: 110;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .dark-mode .settings-menu {
+            background-color: #2c3e50;
+            color: white;
+        }
+
+        .settings-menu.show {
+            transform: translateX(0);
+        }
+
+        .settings-menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .dark-mode .settings-menu-header {
+            border-bottom-color: #444;
+        }
+
+        .settings-menu-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .close-settings {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .dark-mode .close-settings {
+            color: #aaa;
+        }
+
+        .settings-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .settings-group-title {
+            font-weight: bold;
+            margin-bottom: 0.8rem;
+            color: #2c3e50;
+        }
+
+        .dark-mode .settings-group-title {
+            color: #f0f0f0;
+        }
+
+        .settings-option {
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .settings-option label {
+            margin-left: 0.5rem;
+            cursor: pointer;
+        }
+
+        .dark-mode .settings-option label {
+            color: #f0f0f0;
+        }
+
+        .settings-description {
+            font-size: 0.8rem;
+            color: #666;
+            margin-left: 1.8rem;
+            margin-top: -0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .dark-mode .settings-description {
+            color: #aaa;
+        }
+
+        .font-size-controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .font-size-btn {
+            padding: 0.3rem 0.6rem;
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .font-size-btn:hover {
+            background-color: #e74c3c;
         }
 
         /* Responsive */
@@ -588,42 +744,33 @@
                 margin-bottom: 0.5rem;
             }
 
-            .settings-dropdown {
-                left: 0;
-                right: 0;
-                width: 100%;
-            }
-
-            .mode-description {
-                margin-left: 1.5rem;
-            }
-
             .reader-control-button {
                 width: 40px;
                 height: 40px;
                 font-size: 1rem;
             }
         }
+
+        /* Animation สำหรับ Auto Scroll */
+        @keyframes autoScroll {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-100%); }
+        }
+
+        .auto-scroll-active {
+            animation: autoScroll 60s linear infinite;
+        }
     </style>
 </head>
 <body>
+    <!-- แถบความคืบหน้า -->
+    <div class="progress-container" id="progressContainer">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
     <header>
         <div class="header-content">
             <button class="settings-button" id="settingsButton">⚙️</button>
-            <div class="settings-dropdown" id="settingsDropdown">
-                <div class="settings-title">การตั้งค่าการอ่าน</div>
-                <div class="settings-option">
-                    <input type="radio" id="pageMode" name="readingMode" value="page" checked>
-                    <label for="pageMode">โหมดทีละหน้า</label>
-                </div>
-                <div class="mode-description">อ่านทีละหน้า เหมาะสำหรับมังงะทั่วไป</div>
-                
-                <div class="settings-option">
-                    <input type="radio" id="webtoonMode" name="readingMode" value="webtoon">
-                    <label for="webtoonMode">โหมดเลื่อนลง (Webtoon)</label>
-                </div>
-                <div class="mode-description">อ่านแบบเลื่อนลงต่อเนื่อง เหมาะสำหรับเว็บตูน</div>
-            </div>
             <h1>MangaTH</h1>
             <div class="search-container">
                 <input type="text" id="searchInput" class="search-input" placeholder="ค้นหามังงะ...">
@@ -694,7 +841,6 @@
 
         <!-- หน้าอ่านมังงะ -->
         <section id="readerSection" style="display: none;">
-            <button class="toggle-header-button" id="toggleHeaderButton">☰</button>
             <div class="reader-container">
                 <div class="chapter-nav" id="chapterNav">
                     <div class="chapter-controls">
@@ -709,7 +855,7 @@
 
                 <div class="page-info" id="pageInfo">หน้า 1/10</div>
                 
-                <div class="page-container">
+                <div class="page-container" id="pageContainer">
                     <div class="reader-loading" id="readerLoading">กำลังดาวน์โหลด...</div>
                     <img id="mangaPage" class="manga-page" src="" alt="หน้ามังงะ" onerror="this.src='https://via.placeholder.com/800x1200?text=ไม่พบภาพ'">
                 </div>
@@ -723,13 +869,69 @@
             <!-- ปุ่มควบคุม Reader -->
             <div class="reader-controls" id="readerControls">
                 <button class="reader-control-button" id="scrollToTopBtn">↑</button>
-                <button class="reader-control-button" id="toggleHeaderBtn">☰</button>
+                <button class="reader-control-button" id="toggleSettingsBtn">⚙️</button>
             </div>
 
             <!-- Webtoon Navigation -->
             <div class="webtoon-navigation" id="webtoonNavigation">
                 <button id="webtoonPrevChapter" class="nav-button">← ตอนก่อนหน้า</button>
                 <button id="webtoonNextChapter" class="nav-button">ตอนถัดไป →</button>
+            </div>
+
+            <!-- เมนูตั้งค่า -->
+            <div class="settings-menu" id="settingsMenu">
+                <div class="settings-menu-header">
+                    <h3 class="settings-menu-title">การตั้งค่า</h3>
+                    <button class="close-settings" id="closeSettings">&times;</button>
+                </div>
+                
+                <div class="settings-group">
+                    <h4 class="settings-group-title">โหมดการอ่าน</h4>
+                    <div class="settings-option">
+                        <input type="radio" id="menuPageMode" name="menuReadingMode" value="page">
+                        <label for="menuPageMode">โหมดทีละหน้า</label>
+                    </div>
+                    <div class="settings-option">
+                        <input type="radio" id="menuWebtoonMode" name="menuReadingMode" value="webtoon">
+                        <label for="menuWebtoonMode">โหมดเว็บตูน</label>
+                    </div>
+                    <div class="settings-description">
+                        โหมดทีละหน้าสำหรับมังงะทั่วไป, โหมดเว็บตูนสำหรับการเลื่อนอ่านแบบต่อเนื่อง
+                    </div>
+                </div>
+                
+                <div class="settings-group">
+                    <h4 class="settings-group-title">ธีมสี</h4>
+                    <div class="settings-option">
+                        <input type="radio" id="lightMode" name="colorMode" value="light">
+                        <label for="lightMode">โหมดกลางวัน</label>
+                    </div>
+                    <div class="settings-option">
+                        <input type="radio" id="darkMode" name="colorMode" value="dark">
+                        <label for="darkMode">โหมดกลางคืน</label>
+                    </div>
+                </div>
+                
+                <div class="settings-group">
+                    <h4 class="settings-group-title">ขนาดตัวอักษร</h4>
+                    <div class="font-size-controls">
+                        <button id="fontSizeDecrease" class="font-size-btn">A-</button>
+                        <span id="currentFontSize">16px</span>
+                        <button id="fontSizeIncrease" class="font-size-btn">A+</button>
+                    </div>
+                </div>
+                
+                <div class="settings-group">
+                    <h4 class="settings-group-title">ตัวเลือกอื่นๆ</h4>
+                    <div class="settings-option">
+                        <input type="checkbox" id="autoScrollCheckbox" name="autoScroll">
+                        <label for="autoScrollCheckbox">เลื่อนอัตโนมัติ</label>
+                    </div>
+                    <div class="settings-option">
+                        <input type="checkbox" id="hideHeaderCheckbox" name="hideHeader">
+                        <label for="hideHeaderCheckbox">ซ่อนแถบด้านบนเมื่ออ่าน</label>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -764,6 +966,8 @@
         let readingMode = 'page';
         let isHeaderVisible = true;
         let scrollTimeout = null;
+        let autoScrollInterval = null;
+        let isAutoScrolling = false;
 
         // DOM Elements
         const homeLink = document.getElementById('homeLink');
@@ -792,17 +996,27 @@
         const nextPageBtn = document.getElementById('nextPageBtn');
         const readerLoading = document.getElementById('readerLoading');
         const settingsButton = document.getElementById('settingsButton');
-        const settingsDropdown = document.getElementById('settingsDropdown');
-        const pageModeRadio = document.getElementById('pageMode');
-        const webtoonModeRadio = document.getElementById('webtoonMode');
-        const toggleHeaderButton = document.getElementById('toggleHeaderButton');
-        const toggleHeaderBtn = document.getElementById('toggleHeaderBtn');
         const scrollToTopBtn = document.getElementById('scrollToTopBtn');
         const chapterNav = document.getElementById('chapterNav');
         const webtoonNavigation = document.getElementById('webtoonNavigation');
         const webtoonPrevChapter = document.getElementById('webtoonPrevChapter');
         const webtoonNextChapter = document.getElementById('webtoonNextChapter');
         const readerControls = document.getElementById('readerControls');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const toggleSettingsBtn = document.getElementById('toggleSettingsBtn');
+        const settingsMenu = document.getElementById('settingsMenu');
+        const closeSettings = document.getElementById('closeSettings');
+        const menuPageMode = document.getElementById('menuPageMode');
+        const menuWebtoonMode = document.getElementById('menuWebtoonMode');
+        const lightMode = document.getElementById('lightMode');
+        const darkMode = document.getElementById('darkMode');
+        const fontSizeDecrease = document.getElementById('fontSizeDecrease');
+        const fontSizeIncrease = document.getElementById('fontSizeIncrease');
+        const currentFontSize = document.getElementById('currentFontSize');
+        const autoScrollCheckbox = document.getElementById('autoScrollCheckbox');
+        const hideHeaderCheckbox = document.getElementById('hideHeaderCheckbox');
+        const pageContainer = document.getElementById('pageContainer');
         
         // องค์ประกอบใหม่สำหรับหน้ารายละเอียดมังงะ
         const mangaDetailCover = document.getElementById('mangaDetailCover');
@@ -826,28 +1040,78 @@
         chapterSelect.addEventListener('change', changeChapter);
         prevPageBtn.addEventListener('click', showPrevPage);
         nextPageBtn.addEventListener('click', showNextPage);
-        settingsButton.addEventListener('click', toggleSettings);
-        pageModeRadio.addEventListener('change', changeReadingMode);
-        webtoonModeRadio.addEventListener('change', changeReadingMode);
-        toggleHeaderButton.addEventListener('click', toggleHeader);
-        toggleHeaderBtn.addEventListener('click', toggleHeader);
+        settingsButton.addEventListener('click', toggleSettingsMenu);
         scrollToTopBtn.addEventListener('click', scrollToTop);
         webtoonPrevChapter.addEventListener('click', showPrevChapter);
         webtoonNextChapter.addEventListener('click', showNextChapter);
+        toggleSettingsBtn.addEventListener('click', toggleSettingsMenu);
+        closeSettings.addEventListener('click', toggleSettingsMenu);
+        menuPageMode.addEventListener('change', () => changeReadingMode('page'));
+        menuWebtoonMode.addEventListener('change', () => changeReadingMode('webtoon'));
+        lightMode.addEventListener('change', () => changeColorMode('light'));
+        darkMode.addEventListener('change', () => changeColorMode('dark'));
+        fontSizeDecrease.addEventListener('click', () => changeFontSize(-1));
+        fontSizeIncrease.addEventListener('click', () => changeFontSize(1));
+        autoScrollCheckbox.addEventListener('change', toggleAutoScroll);
+        hideHeaderCheckbox.addEventListener('change', toggleHideHeader);
+        document.addEventListener('scroll', handleScroll);
         
-        // ปิดเมนูการตั้งค่าเมื่อคลิกที่อื่น
-        document.addEventListener('click', (e) => {
-            if (!settingsButton.contains(e.target) && !settingsDropdown.contains(e.target)) {
-                settingsDropdown.classList.remove('show');
-            }
+        // เริ่มต้นโหลดข้อมูล
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            showHome();
+            loadSettings();
         });
 
-        // ตรวจสอบการเลื่อนในโหมดเว็บตูน
-        document.addEventListener('scroll', handleScroll);
+        // ฟังก์ชันโหลดการตั้งค่า
+        function loadSettings() {
+            // โหมดการอ่าน
+            const savedReadingMode = localStorage.getItem('readingMode') || 'page';
+            readingMode = savedReadingMode;
+            if (readingMode === 'page') {
+                menuPageMode.checked = true;
+            } else {
+                menuWebtoonMode.checked = true;
+            }
+
+            // โหมดสี
+            const savedColorMode = localStorage.getItem('colorMode') || 'light';
+            if (savedColorMode === 'dark') {
+                darkMode.checked = true;
+                document.body.classList.add('dark-mode');
+            } else {
+                lightMode.checked = true;
+                document.body.classList.remove('dark-mode');
+            }
+
+            // ขนาดตัวอักษร
+            const savedFontSize = localStorage.getItem('fontSize') || 16;
+            document.body.style.fontSize = savedFontSize + 'px';
+            currentFontSize.textContent = savedFontSize + 'px';
+
+            // การซ่อนแถบด้านบน
+            const hideHeader = localStorage.getItem('hideHeader') === 'true';
+            hideHeaderCheckbox.checked = hideHeader;
+            if (hideHeader && readerSection.style.display === 'block') {
+                toggleHeader(false);
+            }
+
+            // เลื่อนอัตโนมัติ
+            const autoScroll = localStorage.getItem('autoScroll') === 'true';
+            autoScrollCheckbox.checked = autoScroll;
+            if (autoScroll && readerSection.style.display === 'block' && readingMode === 'webtoon') {
+                startAutoScroll();
+            }
+        }
 
         // ฟังก์ชันจัดการการเลื่อน
         function handleScroll() {
-            if (readingMode !== 'webtoon' || readerSection.style.display !== 'block') return;
+            if (readerSection.style.display !== 'block') return;
+            
+            // อัปเดตแถบความคืบหน้า
+            updateProgressBar();
+            
+            if (readingMode !== 'webtoon') return;
             
             // ซ่อนแถบด้านบนเมื่อเลื่อนลง
             if (window.scrollY > 100 && isHeaderVisible) {
@@ -878,6 +1142,22 @@
             }, 2000);
         }
 
+        // ฟังก์ชันอัปเดตแถบความคืบหน้า
+        function updateProgressBar() {
+            if (readerSection.style.display !== 'block') {
+                progressContainer.style.display = 'none';
+                return;
+            }
+            
+            progressContainer.style.display = 'block';
+            
+            const scrollPosition = window.scrollY;
+            const pageHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercentage = (scrollPosition / pageHeight) * 100;
+            
+            progressBar.style.width = scrollPercentage + '%';
+        }
+
         // ฟังก์ชันเลื่อนขึ้นด้านบน
         function scrollToTop() {
             window.scrollTo({
@@ -906,23 +1186,23 @@
             }
         }
 
-        // ฟังก์ชันเปิด/ปิดเมนูการตั้งค่า
-        function toggleSettings(e) {
-            e.stopPropagation();
-            settingsDropdown.classList.toggle('show');
+        // ฟังก์ชันเปิด/ปิดเมนูตั้งค่า
+        function toggleSettingsMenu() {
+            settingsMenu.classList.toggle('show');
         }
 
         // ฟังก์ชันเปลี่ยนโหมดการอ่าน
-        function changeReadingMode() {
-            const newMode = document.querySelector('input[name="readingMode"]:checked').value;
-            
-            // ถ้าโหมดไม่เปลี่ยนแปลง ไม่ต้องทำอะไร
-            if (readingMode === newMode) {
-                settingsDropdown.classList.remove('show');
-                return;
-            }
+        function changeReadingMode(newMode) {
+            if (readingMode === newMode) return;
             
             readingMode = newMode;
+            
+            // อัปเดต radio buttons
+            if (readingMode === 'page') {
+                menuPageMode.checked = true;
+            } else {
+                menuWebtoonMode.checked = true;
+            }
             
             // บันทึกการตั้งค่าใน localStorage
             localStorage.setItem('readingMode', readingMode);
@@ -932,13 +1212,19 @@
                 if (readingMode === 'webtoon') {
                     readerSection.classList.add('webtoon-mode');
                     loadWebtoonMode();
+                    
+                    // เริ่มเลื่อนอัตโนมัติหากเปิดไว้
+                    if (autoScrollCheckbox.checked) {
+                        startAutoScroll();
+                    }
                 } else {
                     readerSection.classList.remove('webtoon-mode');
+                    stopAutoScroll();
+                    
                     // รีเซ็ตตำแหน่งหน้าปัจจุบันและโหลดหน้าใหม่
                     currentPageIndex = 0;
                     
                     // ล้างและสร้าง page-container ใหม่
-                    const pageContainer = document.querySelector('.page-container');
                     pageContainer.innerHTML = '';
                     
                     // สร้างองค์ประกอบใหม่
@@ -958,8 +1244,66 @@
                     updatePage();
                 }
             }
+        }
+
+        // ฟังก์ชันเปลี่ยนโหมดสี
+        function changeColorMode(mode) {
+            if (mode === 'dark') {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('colorMode', 'dark');
+            } else {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('colorMode', 'light');
+            }
+        }
+
+        // ฟังก์ชันเปลี่ยนขนาดตัวอักษร
+        function changeFontSize(delta) {
+            const currentSize = parseFloat(getComputedStyle(document.body).fontSize);
+            const newSize = currentSize + delta;
             
-            settingsDropdown.classList.remove('show');
+            // จำกัดขนาดตัวอักษร
+            if (newSize >= 12 && newSize <= 24) {
+                document.body.style.fontSize = newSize + 'px';
+                currentFontSize.textContent = newSize + 'px';
+                localStorage.setItem('fontSize', newSize);
+            }
+        }
+
+        // ฟังก์ชันสลับการซ่อนแถบด้านบน
+        function toggleHideHeader() {
+            const hideHeader = hideHeaderCheckbox.checked;
+            localStorage.setItem('hideHeader', hideHeader);
+            
+            if (readerSection.style.display === 'block') {
+                toggleHeader(!hideHeader);
+            }
+        }
+
+        // ฟังก์ชันเลื่อนอัตโนมัติ
+        function toggleAutoScroll() {
+            const autoScroll = autoScrollCheckbox.checked;
+            localStorage.setItem('autoScroll', autoScroll);
+            
+            if (autoScroll && readerSection.style.display === 'block' && readingMode === 'webtoon') {
+                startAutoScroll();
+            } else {
+                stopAutoScroll();
+            }
+        }
+
+        function startAutoScroll() {
+            stopAutoScroll();
+            
+            if (readingMode !== 'webtoon') return;
+            
+            isAutoScrolling = true;
+            pageContainer.classList.add('auto-scroll-active');
+        }
+
+        function stopAutoScroll() {
+            isAutoScrolling = false;
+            pageContainer.classList.remove('auto-scroll-active');
         }
 
         // ฟังก์ชันโหลดข้อมูลจาก GitHub Raw
@@ -973,16 +1317,6 @@
                 
                 const data = await response.json();
                 mangaData = data.manga || [];
-                
-                const savedMode = localStorage.getItem('readingMode');
-                if (savedMode) {
-                    readingMode = savedMode;
-                    if (readingMode === 'page') {
-                        pageModeRadio.checked = true;
-                    } else {
-                        webtoonModeRadio.checked = true;
-                    }
-                }
                 
                 renderHomePage();
             } catch (error) {
@@ -1114,8 +1448,10 @@
                 readerSection.classList.remove('webtoon-mode');
             }
 
-            // ซ่อนแถบด้านบนเมื่อเริ่มอ่าน
-            toggleHeader(false);
+            // ซ่อนแถบด้านบนเมื่อเริ่มอ่านหากตั้งค่าไว้
+            if (hideHeaderCheckbox.checked) {
+                toggleHeader(false);
+            }
 
             loadChapter();
         }
@@ -1297,7 +1633,13 @@
                     top: 0,
                     behavior: 'smooth'
                 });
+                
+                // เริ่มเลื่อนอัตโนมัติหากเปิดไว้
+                if (autoScrollCheckbox.checked) {
+                    startAutoScroll();
+                }
             } else {
+                stopAutoScroll();
                 updatePage();
             }
             
@@ -1511,12 +1853,6 @@
         // เปิดใช้งานฟังก์ชัน global
         window.showReader = showReader;
         window.showMangaDetails = showMangaDetails;
-
-        // เริ่มต้นโหลดข้อมูล
-        document.addEventListener('DOMContentLoaded', () => {
-            loadData();
-            showHome();
-        });
     </script>
 </body>
 </html>

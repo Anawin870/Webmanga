@@ -1292,6 +1292,11 @@
             
             if (readingMode === 'webtoon') {
                 loadWebtoonMode();
+                // เลื่อนขึ้นด้านบนเมื่อโหลดตอนใหม่ในโหมด Webtoon
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
             } else {
                 updatePage();
             }
@@ -1399,6 +1404,14 @@
             if (currentChapterIndex > 0) {
                 currentChapterIndex--;
                 loadChapter();
+                
+                // เลื่อนขึ้นด้านบนเมื่อเปลี่ยนตอนในโหมด Webtoon
+                if (readingMode === 'webtoon') {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                }
             }
         }
 
@@ -1406,6 +1419,14 @@
             if (currentChapterIndex < currentManga.chapters.length - 1) {
                 currentChapterIndex++;
                 loadChapter();
+                
+                // เลื่อนขึ้นด้านบนเมื่อเปลี่ยนตอนในโหมด Webtoon
+                if (readingMode === 'webtoon') {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                }
             }
         }
 

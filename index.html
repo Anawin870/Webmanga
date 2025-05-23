@@ -760,6 +760,69 @@
         .auto-scroll-active {
             animation: autoScroll 60s linear infinite;
         }
+
+        /* ลูกศรยืนยันเปลี่ยนตอน */
+        .chapter-confirm {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+            background-color: rgba(231, 76, 60, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 95;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .chapter-confirm.show {
+            opacity: 1;
+        }
+        
+        .chapter-confirm-arrow {
+            color: white;
+            font-size: 2rem;
+            transition: transform 0.5s ease;
+        }
+        
+        .chapter-confirm-text {
+            position: absolute;
+            bottom: -25px;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-size: 0.8rem;
+        }
+
+        /* วงกลมแสดงความคืบหน้า */
+        .confirm-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: white;
+            transform: rotate(0deg);
+            transition: transform 0.3s ease;
+        }
+        
+        /* เพิ่ม animation สำหรับการหมุน */
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .rotate-animation {
+            animation: rotate 0.5s linear forwards;
+        }
     </style>
 </head>
 <body>
@@ -878,6 +941,13 @@
                 <button id="webtoonNextChapter" class="nav-button">ตอนถัดไป →</button>
             </div>
 
+            <!-- ลูกศรยืนยันเปลี่ยนตอน -->
+            <div class="chapter-confirm" id="chapterConfirm">
+                <div class="confirm-progress" id="confirmProgress"></div>
+                <div class="chapter-confirm-arrow" id="confirmArrow">↓</div>
+                <div class="chapter-confirm-text">เลื่อนลงเพื่อไปตอนถัดไป</div>
+            </div>
+
             <!-- เมนูตั้งค่า -->
             <div class="settings-menu" id="settingsMenu">
                 <div class="settings-menu-header">
@@ -968,6 +1038,10 @@
         let scrollTimeout = null;
         let autoScrollInterval = null;
         let isAutoScrolling = false;
+        let isConfirming = false;
+        let confirmProgress = 0;
+        const confirmThreshold = 100; // ระยะที่ต้องเลื่อนเพื่อยืนยัน
+        let startY = 0;
 
         // DOM Elements
         const homeLink = document.getElementById('homeLink');
@@ -1017,6 +1091,9 @@
         const autoScrollCheckbox = document.getElementById('autoScrollCheckbox');
         const hideHeaderCheckbox = document.getElementById('hideHeaderCheckbox');
         const pageContainer = document.getElementById('pageContainer');
+        const chapterConfirm = document.getElementById('chapterConfirm');
+        const confirmArrow = document.getElementById('confirmArrow');
+        const confirmProgressElement = document.getElementById('confirmProgress');
         
         // องค์ประกอบใหม่สำหรับหน้ารายละเอียดมังงะ
         const mangaDetailCover = document.getElementById('mangaDetailCover');
@@ -1055,6 +1132,12 @@
         autoScrollCheckbox.addEventListener('change', toggleAutoScroll);
         hideHeaderCheckbox.addEventListener('change', toggleHideHeader);
         document.addEventListener('scroll', handleScroll);
+        chapterConfirm.addEventListener('mousedown', startConfirm);
+        chapterConfirm.addEventListener('touchstart', startConfirm);
+        document.addEventListener('mousemove', handleConfirmScroll);
+        document.addEventListener('touchmove', handleConfirmScroll);
+        document.addEventListener('mouseup', endConfirm);
+        document.addEventListener('touchend', endConfirm);
         
         // เริ่มต้นโหลดข้อมูล
         document.addEventListener('DOMContentLoaded', () => {
@@ -1108,7 +1191,6 @@
         function handleScroll() {
             if (readerSection.style.display !== 'block') return;
             
-            // อัปเดตแถบความคืบหน้า
             updateProgressBar();
             
             if (readingMode !== 'webtoon') return;
@@ -1123,11 +1205,22 @@
             // ตรวจสอบว่าถึงด้านล่างของหน้าแล้วหรือไม่
             const scrollPosition = window.scrollY + window.innerHeight;
             const pageHeight = document.body.scrollHeight;
+            const threshold = 50;
             
-            if (pageHeight - scrollPosition < 100) {
+            if (pageHeight - scrollPosition < threshold) {
                 webtoonNavigation.classList.add('show');
+                
+                // แสดงลูกศรยืนยันเมื่อถึงด้านล่างสุดและยังมีตอนถัดไป
+                if (currentChapterIndex < currentManga.chapters.length - 1 && !isConfirming) {
+                    chapterConfirm.classList.add('show');
+                }
             } else {
                 webtoonNavigation.classList.remove('show');
+                if (!isConfirming) {
+                    chapterConfirm.classList.remove('show');
+                    confirmProgress = 0;
+                    confirmProgressElement.style.transform = 'rotate(0deg)';
+                }
             }
             
             // รีเซ็ต timeout สำหรับการซ่อนแถบ
@@ -1140,6 +1233,66 @@
                     toggleHeader(false);
                 }
             }, 2000);
+        }
+        
+        // ฟังก์ชันเริ่มยืนยันเปลี่ยนตอน
+        function startConfirm(e) {
+            if (currentChapterIndex >= currentManga.chapters.length - 1) return;
+            
+            isConfirming = true;
+            startY = e.clientY || e.touches[0].clientY;
+            e.preventDefault();
+        }
+        
+        // ฟังก์ชันจัดการการเลื่อนสำหรับยืนยัน
+        function handleConfirmScroll(e) {
+            if (!isConfirming) return;
+            
+            const currentY = e.clientY || e.touches[0].clientY;
+            const scrollDelta = startY - currentY;
+            
+            // คำนวณความคืบหน้า (0-100)
+            confirmProgress = Math.min(Math.max(scrollDelta, 0), confirmThreshold);
+            const rotation = (confirmProgress / confirmThreshold) * 360;
+            
+            // อัปเดตการแสดงผล
+            confirmProgressElement.style.transform = `rotate(${rotation}deg)`;
+            
+            // ถ้าเลื่อนครบแล้วให้เปลี่ยนตอน
+            if (confirmProgress >= confirmThreshold) {
+                isConfirming = false;
+                confirmArrow.classList.add('rotate-animation');
+                
+                setTimeout(() => {
+                    showNextChapter();
+                    chapterConfirm.classList.remove('show');
+                    confirmArrow.classList.remove('rotate-animation');
+                    confirmProgressElement.style.transform = 'rotate(0deg)';
+                    confirmProgress = 0;
+                }, 500);
+            }
+        }
+        
+        // ฟังก์ชันสิ้นสุดการยืนยัน
+        function endConfirm() {
+            if (!isConfirming) return;
+            
+            isConfirming = false;
+            
+            // รีเซ็ตความคืบหน้า
+            if (confirmProgress < confirmThreshold) {
+                confirmProgress = 0;
+                confirmProgressElement.style.transform = 'rotate(0deg)';
+                
+                // ซ่อนลูกศรถ้ายังไม่ครบ
+                const scrollPosition = window.scrollY + window.innerHeight;
+                const pageHeight = document.body.scrollHeight;
+                const threshold = 50;
+                
+                if (pageHeight - scrollPosition >= threshold) {
+                    chapterConfirm.classList.remove('show');
+                }
+            }
         }
 
         // ฟังก์ชันอัปเดตแถบความคืบหน้า
@@ -1745,14 +1898,23 @@
         function showPrevChapter() {
             if (currentChapterIndex > 0) {
                 currentChapterIndex--;
+                
+                // หยุดการเลื่อนอัตโนมัติถ้ามี
+                stopAutoScroll();
+                
                 loadChapter();
                 
-                // เลื่อนขึ้นด้านบนเมื่อเปลี่ยนตอนในโหมด Webtoon
-                if (readingMode === 'webtoon') {
-                    window.scrollTo({
-                        top: 0,
-                        behavior: 'smooth'
-                    });
+                // รีเซ็ตตำแหน่งการเลื่อน
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'auto'
+                });
+                
+                // ถ้าเปิดโหมดเลื่อนอัตโนมัติอยู่ ให้เริ่มใหม่
+                if (autoScrollCheckbox.checked) {
+                    setTimeout(() => {
+                        startAutoScroll();
+                    }, 1000);
                 }
             }
         }
@@ -1760,14 +1922,23 @@
         function showNextChapter() {
             if (currentChapterIndex < currentManga.chapters.length - 1) {
                 currentChapterIndex++;
+                
+                // หยุดการเลื่อนอัตโนมัติถ้ามี
+                stopAutoScroll();
+                
                 loadChapter();
                 
-                // เลื่อนขึ้นด้านบนเมื่อเปลี่ยนตอนในโหมด Webtoon
-                if (readingMode === 'webtoon') {
-                    window.scrollTo({
-                        top: 0,
-                        behavior: 'smooth'
-                    });
+                // รีเซ็ตตำแหน่งการเลื่อน
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'auto'
+                });
+                
+                // ถ้าเปิดโหมดเลื่อนอัตโนมัติอยู่ ให้เริ่มใหม่
+                if (autoScrollCheckbox.checked) {
+                    setTimeout(() => {
+                        startAutoScroll();
+                    }, 1000);
                 }
             }
         }

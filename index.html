@@ -278,6 +278,7 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             border-radius: 4px;
             display: none;
+            position: relative;
         }
 
         /* สไตล์สำหรับโหมด Webtoon */
@@ -348,6 +349,26 @@
         .dark-mode .reader-loading {
             background: rgba(44, 62, 80, 0.8);
             color: #f0f0f0;
+        }
+
+        /* Loading สำหรับแต่ละรูปภาพในโหมด Webtoon */
+        .page-loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1rem;
+            z-index: 10;
+        }
+
+        .dark-mode .page-loading {
+            background: rgba(0, 0, 0, 0.7);
         }
 
         /* Search Results */
@@ -747,11 +768,12 @@
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            width: 60px;
-            height: 60px;
+            width: 80px;
+            height: 80px;
             background-color: rgba(231, 76, 60, 0.9);
             border-radius: 50%;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             z-index: 95;
@@ -765,21 +787,20 @@
             opacity: 1;
         }
         
+        .chapter-confirm-text {
+            color: white;
+            font-size: 0.8rem;
+            text-align: center;
+            margin-bottom: 5px;
+            width: 100%;
+        }
+        
         .chapter-confirm-arrow {
             color: white;
             font-size: 2rem;
             transition: transform 0.5s ease;
         }
         
-        .chapter-confirm-text {
-            position: absolute;
-            bottom: -25px;
-            width: 100%;
-            text-align: center;
-            color: white;
-            font-size: 0.8rem;
-        }
-
         /* วงกลมแสดงความคืบหน้า */
         .confirm-progress {
             position: absolute;
@@ -803,12 +824,35 @@
         .rotate-animation {
             animation: rotate 0.5s linear forwards;
         }
+
+        /* Network status */
+        .network-status {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            padding: 10px 15px;
+            background-color: #e74c3c;
+            color: white;
+            border-radius: 20px;
+            z-index: 100;
+            display: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .network-status.online {
+            background-color: #2ecc71;
+        }
     </style>
 </head>
 <body>
     <!-- แถบความคืบหน้า -->
     <div class="progress-container" id="progressContainer">
         <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- Network status indicator -->
+    <div class="network-status" id="networkStatus">
+        ไม่มีการเชื่อมต่ออินเทอร์เน็ต
     </div>
 
     <header>
@@ -900,7 +944,7 @@
                 
                 <div class="page-container" id="pageContainer">
                     <div class="reader-loading" id="readerLoading">กำลังดาวน์โหลด...</div>
-                    <img id="mangaPage" class="manga-page" src="" alt="หน้ามังงะ" onerror="this.src='https://via.placeholder.com/800x1200?text=ไม่พบภาพ'">
+                    <img id="mangaPage" class="manga-page" src="" alt="หน้ามังงะ" onerror="this.onerror=null;this.src='https://via.placeholder.com/800x1200?text=ไม่พบภาพ';checkNetworkStatus();">
                 </div>
 
                 <div class="page-controls">
@@ -918,8 +962,8 @@
             <!-- ลูกศรยืนยันเปลี่ยนตอน -->
             <div class="chapter-confirm" id="chapterConfirm">
                 <div class="confirm-progress" id="confirmProgress"></div>
-                <div class="chapter-confirm-arrow" id="confirmArrow">↓</div>
                 <div class="chapter-confirm-text">เลื่อนลงเพื่อไปตอนถัดไป</div>
+                <div class="chapter-confirm-arrow" id="confirmArrow">↓</div>
             </div>
 
             <!-- เมนูตั้งค่า -->
@@ -1016,6 +1060,7 @@
         let confirmProgress = 0;
         const confirmThreshold = 100; // ระยะที่ต้องเลื่อนเพื่อยืนยัน
         let startY = 0;
+        let isOnline = navigator.onLine;
 
         // DOM Elements
         const homeLink = document.getElementById('homeLink');
@@ -1065,6 +1110,7 @@
         const chapterConfirm = document.getElementById('chapterConfirm');
         const confirmArrow = document.getElementById('confirmArrow');
         const confirmProgressElement = document.getElementById('confirmProgress');
+        const networkStatus = document.getElementById('networkStatus');
         
         // องค์ประกอบใหม่สำหรับหน้ารายละเอียดมังงะ
         const mangaDetailCover = document.getElementById('mangaDetailCover');
@@ -1107,13 +1153,46 @@
         document.addEventListener('touchmove', handleConfirmScroll);
         document.addEventListener('mouseup', endConfirm);
         document.addEventListener('touchend', endConfirm);
+        window.addEventListener('online', updateNetworkStatus);
+        window.addEventListener('offline', updateNetworkStatus);
         
         // เริ่มต้นโหลดข้อมูล
         document.addEventListener('DOMContentLoaded', () => {
             loadData();
             showHome();
             loadSettings();
+            updateNetworkStatus();
         });
+
+        // ฟังก์ชันตรวจสอบสถานะเครือข่าย
+        function updateNetworkStatus() {
+            isOnline = navigator.onLine;
+            if (isOnline) {
+                networkStatus.textContent = 'กลับมาเชื่อมต่ออินเทอร์เน็ตแล้ว';
+                networkStatus.classList.add('online');
+                setTimeout(() => {
+                    networkStatus.style.display = 'none';
+                }, 3000);
+                
+                // ถ้ามีการเชื่อมต่อใหม่และอยู่ในโหมด Webtoon ให้ลองโหลดรูปภาพอีกครั้ง
+                if (readerSection.style.display === 'block' && readingMode === 'webtoon') {
+                    loadWebtoonMode();
+                }
+            } else {
+                networkStatus.textContent = 'ไม่มีการเชื่อมต่ออินเทอร์เน็ต';
+                networkStatus.classList.remove('online');
+                networkStatus.style.display = 'block';
+            }
+        }
+
+        // ฟังก์ชันตรวจสอบสถานะเครือข่ายเมื่อรูปภาพโหลดไม่สำเร็จ
+        function checkNetworkStatus() {
+            if (!isOnline) {
+                networkStatus.textContent = 'ไม่มีการเชื่อมต่ออินเทอร์เน็ต';
+                networkStatus.classList.remove('online');
+                networkStatus.style.display = 'block';
+            }
+        }
 
         // ฟังก์ชันโหลดการตั้งค่า
         function loadSettings() {
@@ -1145,7 +1224,7 @@
             const hideHeader = localStorage.getItem('hideHeader') === 'true';
             hideHeaderCheckbox.checked = hideHeader;
             if (hideHeader && readerSection.style.display === 'block') {
-                toggleHeader(false);
+                toggleHeader(!hideHeader);
             }
 
             // เลื่อนอัตโนมัติ
@@ -1353,7 +1432,9 @@
                     img.className = 'manga-page';
                     img.alt = 'หน้ามังงะ';
                     img.onerror = function() {
-                        this.src = 'https://via.placeholder.com/800x1200?text=ไม่พบภาพ';
+                        this.onerror=null;
+                        this.src='https://via.placeholder.com/800x1200?text=ไม่พบภาพ';
+                        checkNetworkStatus();
                     };
                     pageContainer.appendChild(img);
                     
@@ -1441,6 +1522,7 @@
             } catch (error) {
                 console.error('Error loading data:', error);
                 featuredManga.innerHTML = '<div class="loading">โหลดข้อมูลไม่สำเร็จ</div>';
+                checkNetworkStatus();
             }
         }
         
@@ -1779,15 +1861,30 @@
             
             // สร้างและโหลดหน้าทั้งหมด
             chapter.pages.forEach((pageUrl, index) => {
+                const imgContainer = document.createElement('div');
+                imgContainer.style.position = 'relative';
+                
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'page-loading';
+                loadingDiv.textContent = 'กำลังดาวน์โหลด...';
+                
                 const img = document.createElement('img');
                 img.className = 'manga-page';
                 img.src = pageUrl;
                 img.alt = `หน้าที่ ${index + 1}`;
+                img.onload = function() {
+                    loadingDiv.style.display = 'none';
+                };
                 img.onerror = function() {
-                    this.src = 'https://via.placeholder.com/800x1200?text=ไม่พบภาพ';
+                    this.onerror=null;
+                    this.src='https://via.placeholder.com/800x1200?text=ไม่พบภาพ';
+                    loadingDiv.textContent = 'โหลดภาพไม่สำเร็จ';
+                    checkNetworkStatus();
                 };
                 
-                pageContainer.appendChild(img);
+                imgContainer.appendChild(img);
+                imgContainer.appendChild(loadingDiv);
+                pageContainer.appendChild(imgContainer);
             });
             
             // ซ่อน loading เมื่อโหลดเสร็จ
@@ -1821,9 +1918,11 @@
                 };
                 
                 mangaPage.onerror = function() {
+                    this.onerror=null;
+                    this.src='https://via.placeholder.com/800x1200?text=ไม่พบภาพ';
                     readerLoading.style.display = 'none';
                     mangaPage.style.display = 'block';
-                    this.src = 'https://via.placeholder.com/800x1200?text=ไม่พบภาพ';
+                    checkNetworkStatus();
                 };
                 
                 pageInfo.textContent = `หน้า ${currentPageIndex + 1}/${chapter.pages.length}`;

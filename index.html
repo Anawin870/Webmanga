@@ -537,26 +537,6 @@
             transform: scale(1.1);
         }
 
-        /* Webtoon Navigation */
-        .webtoon-navigation {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: rgba(44, 62, 80, 0.9);
-            padding: 10px;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            z-index: 90;
-            transform: translateY(100%);
-            transition: transform 0.3s ease;
-        }
-
-        .webtoon-navigation.show {
-            transform: translateY(0);
-        }
-
         /* แถบความคืบหน้า */
         .progress-container {
             position: fixed;
@@ -935,12 +915,6 @@
                 <button class="reader-control-button" id="toggleSettingsBtn">⚙️</button>
             </div>
 
-            <!-- Webtoon Navigation -->
-            <div class="webtoon-navigation" id="webtoonNavigation">
-                <button id="webtoonPrevChapter" class="nav-button">← ตอนก่อนหน้า</button>
-                <button id="webtoonNextChapter" class="nav-button">ตอนถัดไป →</button>
-            </div>
-
             <!-- ลูกศรยืนยันเปลี่ยนตอน -->
             <div class="chapter-confirm" id="chapterConfirm">
                 <div class="confirm-progress" id="confirmProgress"></div>
@@ -1072,9 +1046,6 @@
         const settingsButton = document.getElementById('settingsButton');
         const scrollToTopBtn = document.getElementById('scrollToTopBtn');
         const chapterNav = document.getElementById('chapterNav');
-        const webtoonNavigation = document.getElementById('webtoonNavigation');
-        const webtoonPrevChapter = document.getElementById('webtoonPrevChapter');
-        const webtoonNextChapter = document.getElementById('webtoonNextChapter');
         const readerControls = document.getElementById('readerControls');
         const progressContainer = document.getElementById('progressContainer');
         const progressBar = document.getElementById('progressBar');
@@ -1119,8 +1090,6 @@
         nextPageBtn.addEventListener('click', showNextPage);
         settingsButton.addEventListener('click', toggleSettingsMenu);
         scrollToTopBtn.addEventListener('click', scrollToTop);
-        webtoonPrevChapter.addEventListener('click', showPrevChapter);
-        webtoonNextChapter.addEventListener('click', showNextChapter);
         toggleSettingsBtn.addEventListener('click', toggleSettingsMenu);
         closeSettings.addEventListener('click', toggleSettingsMenu);
         menuPageMode.addEventListener('change', () => changeReadingMode('page'));
@@ -1208,14 +1177,11 @@
             const threshold = 50;
             
             if (pageHeight - scrollPosition < threshold) {
-                webtoonNavigation.classList.add('show');
-                
                 // แสดงลูกศรยืนยันเมื่อถึงด้านล่างสุดและยังมีตอนถัดไป
                 if (currentChapterIndex < currentManga.chapters.length - 1 && !isConfirming) {
                     chapterConfirm.classList.add('show');
                 }
             } else {
-                webtoonNavigation.classList.remove('show');
                 if (!isConfirming) {
                     chapterConfirm.classList.remove('show');
                     confirmProgress = 0;
